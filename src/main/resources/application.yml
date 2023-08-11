@@ -16,3 +16,7 @@ spring:
 logging.level:
   org.hibernate.SQL: debug
 # org.hibernate.type: trace
+
+openai:
+  api:
+    key: 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
