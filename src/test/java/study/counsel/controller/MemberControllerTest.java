@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import study.counsel.config.PasswordEncrypter;
+import study.counsel.dto.DeleteMemberDto;
 import study.counsel.dto.MemberFormDto;
 import study.counsel.entity.Member;
 import study.counsel.exception.MemberAlreadyExistsException;
@@ -97,6 +98,26 @@ class MemberControllerTest {
 
     }
 
+    // 회원삭제 테스트
+    @Test
+    void deleteMember() {
+        MemberFormDto memberFormDto = createForm();
+        memberService.createMember(memberFormDto);
+
+        Member findMember = memberRepository.findByMemberId(memberFormDto.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 회원"));
+
+        String memberId = findMember.getMemberId();
+        String password = findMember.getPassword();
+
+        DeleteMemberDto deleteMemberDto = new DeleteMemberDto();
+
+        deleteMemberDto.setMemberId(memberId);
+        deleteMemberDto.setPassword(password);
+
+        memberService.deleteMember(deleteMemberDto);
+
+        assertThat(findMember.isDeleted()).isTrue();
+    }
 
     public MemberFormDto createForm() {
         MemberFormDto memberFormDto = new MemberFormDto();

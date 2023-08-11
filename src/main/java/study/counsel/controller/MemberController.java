@@ -8,6 +8,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import study.counsel.dto.ConfirmPasswordDto;
+import study.counsel.dto.DeleteMemberDto;
 import study.counsel.dto.MemberFormDto;
 import study.counsel.exception.MemberAlreadyExistsException;
 import study.counsel.service.MemberService;
@@ -85,8 +86,24 @@ public class MemberController {
             log.info("error={}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
         }
+        return "redirect:/";
+    }
+
+    @PostMapping("/delete")
+    public String deleteMember(@ModelAttribute("deleteMember") @Validated DeleteMemberDto deleteMemberDto, BindingResult bindingResult, Model model) {
+
+        if (bindingResult.hasErrors()) {
+            log.info("error={}", bindingResult.getFieldError());
+            return "members/memberDeleteDto";
+        }
+
+        try {
+            memberservice.deleteMember(deleteMemberDto);
+        } catch (Exception e) {
+            log.info("error={}", e.getMessage());
+            model.addAttribute("errorMessage", e.getMessage());
+        }
 
         return "redirect:/";
-
     }
 }

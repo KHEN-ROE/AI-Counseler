@@ -33,6 +33,9 @@ public class Member {
     @Setter
     private String email;
 
+    @Setter
+    private boolean isDeleted = false;
+
     public Member(String memberId, String password, String username, String nickname, String email) {
         this.memberId = memberId;
         this.password = password;
@@ -40,7 +43,6 @@ public class Member {
         this.nickname = nickname;
         this.email = email;
     }
-
 
     public static Member createMember(MemberFormDto memberFormDto, String encryptedPassword) {
         return new Member(memberFormDto.getMemberId(), encryptedPassword,

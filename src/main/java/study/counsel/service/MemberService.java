@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.counsel.config.PasswordEncrypter;
 import study.counsel.dto.ConfirmPasswordDto;
+import study.counsel.dto.DeleteMemberDto;
 import study.counsel.dto.MemberFormDto;
 import study.counsel.entity.Member;
 import study.counsel.exception.MemberAlreadyExistsException;
@@ -72,6 +73,17 @@ public class MemberService {
             }
         } catch (Exception e) {
             throw new IllegalStateException("비밀번호 불일치");
+        }
+    }
+
+    public void deleteMember(DeleteMemberDto deleteMemberDto) {
+
+        Member findMember = memberRepository.findByMemberId(deleteMemberDto.getMemberId())
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 사용자"));
+
+        String encryptedPwd = passwordEncrypter.encrypt(deleteMemberDto.getPassword());
+        if (findMember.getPassword().equals(encryptedPwd)) {
+            findMember.setDeleted(true); // 논리적 삭제
         }
     }
 }
