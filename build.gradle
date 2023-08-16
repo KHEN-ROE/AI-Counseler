@@ -35,6 +35,15 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	// 쿼리 파라미터 로그
+	implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.8'
+
+	// websocket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	// OpenAPI 서드파티 라이브러리
+	implementation 'com.theokanning.openai-gpt3-java:service:0.15.0'
+
 	//querydsl 추가
 	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
 	annotationProcessor "com.querydsl:querydsl-apt:${queryDslVersion}"

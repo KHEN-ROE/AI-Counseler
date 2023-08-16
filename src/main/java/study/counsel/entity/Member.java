@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import study.counsel.common.BaseEntity;
 import study.counsel.dto.MemberFormDto;
 
 import javax.persistence.Entity;
@@ -13,7 +14,7 @@ import javax.persistence.Id;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member {
+public class Member extends BaseEntity {
 
 
     @Id @GeneratedValue

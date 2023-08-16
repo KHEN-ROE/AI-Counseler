@@ -15,7 +15,7 @@ import study.counsel.repository.MemberRepository;
 
 @Slf4j
 @Service
-@Transactional(readOnly = true)
+@Transactional
 @RequiredArgsConstructor
 public class MemberService {
 
