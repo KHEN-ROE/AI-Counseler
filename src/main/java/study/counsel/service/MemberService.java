@@ -7,10 +7,14 @@ import org.springframework.transaction.annotation.Transactional;
 import study.counsel.config.PasswordEncrypter;
 import study.counsel.dto.ConfirmPasswordDto;
 import study.counsel.dto.DeleteMemberDto;
+import study.counsel.dto.LoginDto;
 import study.counsel.dto.MemberFormDto;
 import study.counsel.entity.Member;
 import study.counsel.exception.MemberAlreadyExistsException;
 import study.counsel.repository.MemberRepository;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 
 @Slf4j
@@ -85,5 +89,21 @@ public class MemberService {
         if (findMember.getPassword().equals(encryptedPwd)) {
             findMember.setDeleted(true); // 논리적 삭제
         }
+    }
+
+    public void login(LoginDto loginDto, HttpServletRequest request) {
+
+        Member findMember = memberRepository.findByMemberId(loginDto.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
+        String encryptedPwd = passwordEncrypter.encrypt(loginDto.getPassword());
+
+        if (findMember.getPassword().equals(encryptedPwd)) {
+            // 로그인 성공시 쿠키에 JSESSIONID 저장
+            HttpSession session = request.getSession();
+            // 세션에 사용자 id 저장
+            session.setAttribute("loginMember", loginDto.getMemberId());
+        } else {
+            throw new IllegalStateException("비밀번호 불일치"); // 나중에 예외처리
+        }
+
     }
 }

@@ -18,6 +18,7 @@ public class ChatGPTController {
 
     private final ChatGPTService chatGPTService;
 
+    // 전송 구조를 바꿔야함. 이전의 대화 내용을 모두 전송해줘야 함...
     @PostMapping("/completion/chat")
     public GPTCompletionChatResponse completionChat(final @RequestBody @Valid GPTCompletionChatRequest gptCompletionChatRequest) {
         return chatGPTService.completionChat(gptCompletionChatRequest);

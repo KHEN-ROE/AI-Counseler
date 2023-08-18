@@ -9,9 +9,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import study.counsel.dto.ConfirmPasswordDto;
 import study.counsel.dto.DeleteMemberDto;
+import study.counsel.dto.LoginDto;
 import study.counsel.dto.MemberFormDto;
 import study.counsel.exception.MemberAlreadyExistsException;
 import study.counsel.service.MemberService;
+
+import javax.servlet.http.HttpServletRequest;
+import java.text.Bidi;
 
 
 @Slf4j
@@ -94,7 +98,7 @@ public class MemberController {
 
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());
-            return "members/memberDeleteDto";
+            return "members/deleteMemberForm";
         }
 
         try {
@@ -106,4 +110,23 @@ public class MemberController {
 
         return "redirect:/";
     }
+
+    @PostMapping("/login")
+    public String login(@ModelAttribute @Validated LoginDto loginDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
+
+        if (bindingResult.hasErrors()) {
+            log.info("error={}", bindingResult.getFieldError());
+            return "members/loginForm";
+        }
+
+        try {
+            memberservice.login(loginDto, request);
+        } catch (Exception e) {
+            log.info("error={}", e.getMessage());
+            model.addAttribute("errorMessage", e.getMessage());
+        }
+
+        return "redirect:/";
+    }
+
 }
