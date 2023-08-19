@@ -19,7 +19,7 @@ import java.text.Bidi;
 
 
 @Slf4j
-@Controller
+@RestController
 @RequestMapping("/members")
 @RequiredArgsConstructor
 public class MemberController {
@@ -33,7 +33,7 @@ public class MemberController {
     }
 
     @PostMapping("/new")
-    public String createMember(@Validated MemberFormDto memberFormDto, BindingResult bindingResult, Model model) {
+    public String createMember(@Validated @RequestBody MemberFormDto memberFormDto, BindingResult bindingResult, Model model) {
 
         // 입력값에 오류있으면(검증 실패시) bindingResult에 담아서 다시 form으로 이동
         if (bindingResult.hasErrors()) {
@@ -112,7 +112,9 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public String login(@ModelAttribute @Validated LoginDto loginDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
+    public String login(@Validated @RequestBody LoginDto loginDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
+
+        log.info("받은 정보 = {}", loginDto);
 
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());

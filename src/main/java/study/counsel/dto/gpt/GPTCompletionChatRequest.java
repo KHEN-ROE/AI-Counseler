@@ -6,8 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -26,16 +28,23 @@ public class GPTCompletionChatRequest {
     @NotNull
     private Integer maxTokens;
 
-    public static ChatCompletionRequest of(GPTCompletionChatRequest request) {
+    public static ChatCompletionRequest of(GPTCompletionChatRequest request, Map<Object, List<ChatMessage>> conversationHistory, HttpServletRequest httpServletRequest) {
+
+        Object loginMember = httpServletRequest.getSession().getAttribute("loginMember");
+
         return ChatCompletionRequest.builder()
                 .model(request.getModel())
-                .messages(convertChatMessage(request))
+//                .messages(convertChatMessage(request)) // message에 role, content 포함됨.
+                .messages(conversationHistory.get(loginMember)) // map에서 list를 꺼낸다
                 .maxTokens(request.getMaxTokens())
                 .build();
     }
 
+    // new ChatMessage에 이전 시스템의 역할과 이전 대화내역을 넣으면 되지 않을까
+    // 이거 필요 없을듯?
     private static List<ChatMessage> convertChatMessage(GPTCompletionChatRequest request) {
-        return List.of(new ChatMessage(request.getRole(), request.getMessage()));
+        return List.of(new ChatMessage("system", "당신은 웨이트 트레이닝 전문가입니다. 20대 여성처럼 친근하게 답변해주세요.")
+                ,new ChatMessage(request.getRole(), request.getMessage()));
     }
 
 

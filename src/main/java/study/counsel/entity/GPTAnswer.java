@@ -13,6 +13,8 @@ import javax.persistence.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GPTAnswer extends BaseEntity {
 
+    // Member와 조인 필요
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
