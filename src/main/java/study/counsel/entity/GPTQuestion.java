@@ -14,6 +14,7 @@ public class GPTQuestion extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "question_id")
     private Long id;
 
     @Column(name = "gpt_question", length = 1500, nullable = false)
@@ -23,8 +24,13 @@ public class GPTQuestion extends BaseEntity {
     @JoinColumn(name = "answer_id")
     private GPTAnswer answer;
 
-    public GPTQuestion(String question, GPTAnswer answer) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
+
+    public GPTQuestion(String question, GPTAnswer answer, Member member) {
         this.question = question;
         this.answer = answer;
+        this.member = member;
     }
 }

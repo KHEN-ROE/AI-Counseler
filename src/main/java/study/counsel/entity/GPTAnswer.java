@@ -17,12 +17,18 @@ public class GPTAnswer extends BaseEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "answer_id")
     private Long id;
 
     @Column(name = "gpt_answer", length = 1500, nullable = false)
     private String answer;
 
-    public GPTAnswer(String answer) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "memberId")
+    private Member member;
+
+    public GPTAnswer(String answer, Member member) {
         this.answer = answer;
+        this.member = member;
     }
 }

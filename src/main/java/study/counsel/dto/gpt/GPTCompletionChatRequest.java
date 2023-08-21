@@ -26,6 +26,8 @@ public class GPTCompletionChatRequest {
     private String message;
 
     @NotNull
+    private String memberId;
+
     private Integer maxTokens;
 
     public static ChatCompletionRequest of(GPTCompletionChatRequest request, Map<Object, List<ChatMessage>> conversationHistory, HttpServletRequest httpServletRequest) {
@@ -42,10 +44,10 @@ public class GPTCompletionChatRequest {
 
     // new ChatMessage에 이전 시스템의 역할과 이전 대화내역을 넣으면 되지 않을까
     // 이거 필요 없을듯?
-    private static List<ChatMessage> convertChatMessage(GPTCompletionChatRequest request) {
-        return List.of(new ChatMessage("system", "당신은 웨이트 트레이닝 전문가입니다. 20대 여성처럼 친근하게 답변해주세요.")
-                ,new ChatMessage(request.getRole(), request.getMessage()));
-    }
+//    private static List<ChatMessage> convertChatMessage(GPTCompletionChatRequest request) {
+//        return List.of(new ChatMessage("system", "당신은 웨이트 트레이닝 전문가입니다. 20대 여성처럼 친근하게 답변해주세요.")
+//                ,new ChatMessage(request.getRole(), request.getMessage()));
+//    }
 
 
 }
