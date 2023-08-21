@@ -100,16 +100,12 @@ public class ChatGPTService {
 
         // 토큰 개수 초과 시 3, 4, 5 번째 대화 삭제
         if (totalTokens >= 3000) {
-            if (conversationList.size() > 3) {
-                conversationList.remove(2); // 3번째 대화 삭제
-                if (conversationList.size() > 3) {
-                    conversationList.remove(2); // 4번째 대화 삭제(원래 4번째 대화가 이제 3번째 위치에 있으므로)
-                    if (conversationList.size() > 3) {
-                        conversationList.remove(2); // 4번째 대화 삭제(원래 4번째 대화가 이제 3번째 위치에 있으므로)
-                    }
-                }
+            for (int i = 0; i < 3 && conversationList.size() > 2; i++) {
+                conversationList.remove(2);
             }
         }
+
+        log.info("삭제 후 토큰 수={}", totalTokens);
 
         String responseMessage = "";
         for (String message : messages) {
