@@ -34,7 +34,8 @@ public class ChatGPTService {
 
     private final MemberRepository memberRepository;
 
-    // 동시성 문제 해결과 데이터의 순서 유지를 위해 이 구현체 사용
+    // 동시성 문제 해결과 데이터의 순서 유지를 위해 이 구현체 사용.
+    // 생각해보니까 순서는 리스트에서 지켜지기 때문에, 굳이 맵에서 순서를 고려할 필요는 없을 듯
     Map<Object, List<ChatMessage>> conversationHistory = Collections.synchronizedMap(new LinkedHashMap<>()); // 식별자, conversationList(키, 값)
 
     // SYSTEM에 역할 부여

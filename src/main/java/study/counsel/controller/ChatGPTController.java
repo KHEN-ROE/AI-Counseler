@@ -24,7 +24,9 @@ public class ChatGPTController {
     // 2. 토큰 수를 체크 한다.
     // 3. 총 토큰 수가 4097을 초과하면 그 이하가 될 때까지 오래된 것부터 제거한다.
     // 4. 위 조건을 만족하면 open AI 서버에 요청을 보낸다.
-    // 현재 빠뜨린 점 : 사용자의 질문만 보냈다. assistant의 role와 답변을 보내지 않았다!
+    // 현재 빠뜨린 점 : 이전 대화 내역을 사용자가 확인하기 위해서 상담번호, 질문, 답변 모두를 포함한 엔티티가 필요할 듯
+    // 로그인할 때마다 JSESSIONID 는 동일한가? 그렇다면 이전 대화 내역을 계속 보내게 되는데?
+    // 지우기 버튼을 만들어서 LIST에 있는 대화 내역을 지워야할 듯
 
     @PostMapping("/completion/chat")
     public GPTCompletionChatResponse completionChat(final @RequestBody @Valid GPTCompletionChatRequest request, HttpServletRequest httpServletRequest) {
