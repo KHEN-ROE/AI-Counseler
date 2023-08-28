@@ -26,7 +26,6 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncrypter passwordEncrypter;
 
-    @Transactional
     public void createMember(MemberFormDto memberFormDto) {
 
         // 중복 회원 검증. 중복이면 409에러(conflict)

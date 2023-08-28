@@ -26,7 +26,8 @@ public class ChatGPTController {
     // 4. 위 조건을 만족하면 open AI 서버에 요청을 보낸다.
     // 현재 빠뜨린 점 : 이전 대화 내역을 사용자가 확인하기 위해서 상담번호, 질문, 답변 모두를 포함한 엔티티가 필요할 듯
     // 로그인할 때마다 JSESSIONID 는 동일한가? 새로운 브라우저 세션 내에서 로그인하면 달라진다. 그러나 동일한 세션 내에서 로갓했다가 로긴하면 같을 수 있음.
-    // 지우기 버튼을 만들어서 LIST에 있는 대화 내역을 지워야할 듯
+    // 지우기 버튼을 만들어서 LIST에 있는 대화 내역을 지워야할 듯.
+    // 상담 모드 만들고
 
     @PostMapping("/completion/chat")
     public GPTCompletionChatResponse completionChat(final @RequestBody @Valid GPTCompletionChatRequest request, HttpServletRequest httpServletRequest) {
