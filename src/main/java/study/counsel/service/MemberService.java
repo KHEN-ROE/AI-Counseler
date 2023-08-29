@@ -105,4 +105,12 @@ public class MemberService {
         }
 
     }
+
+    public void logout(HttpServletRequest request) {
+        HttpSession session = request.getSession();
+
+        if (session != null) {
+            session.invalidate();
+        }
+    }
 }

@@ -1,24 +1,22 @@
 package study.counsel.controller;
 
-import com.theokanning.openai.completion.chat.ChatMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import study.counsel.dto.gpt.GPTCompletionChatRequest;
-import study.counsel.dto.gpt.GPTCompletionChatResponse;
+import study.counsel.entity.CounselHistory;
 import study.counsel.service.ChatGPTService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Slf4j
 @Controller // 나중에 Controller로 바꾸자
-@RequestMapping("/chatGpt")
+@RequestMapping("/chatGPT")
 @RequiredArgsConstructor
 public class ChatGPTController {
 
@@ -45,10 +43,35 @@ public class ChatGPTController {
         Object loginMember = httpServletRequest.getSession().getAttribute("loginMember");
         request.setMemberId(loginMember.toString()); // 타입 변환 필요
 
-        List<ChatMessage> conversationList = chatGPTService.completionChat(request, httpServletRequest);
+        List<CounselHistory> conversationList = chatGPTService.completionChat(request, httpServletRequest);
+        List<CounselHistory> counselList = chatGPTService.getCounselList(httpServletRequest);
 
+        model.addAttribute("counselList", counselList);
         model.addAttribute("conversationList", conversationList);
 
         return "chatView";
     }
+
+    @GetMapping("/completion/chat")
+    public String getCounselList(HttpServletRequest request, Model model) {
+
+        List<CounselHistory> counselList = chatGPTService.getCounselList(request);
+
+        model.addAttribute("counselList", counselList);
+
+        return "chatView";
+    }
+
+    @GetMapping("/completion/chat/{JSESSIONID}")
+    public String getCounselListDetail(@PathVariable String JSESSIONID, HttpServletRequest request, Model model) {
+
+        List<CounselHistory> conversationList = chatGPTService.getCounselListDetail(JSESSIONID);
+        List<CounselHistory> counselList = chatGPTService.getCounselList(request);
+
+        model.addAttribute("counselList", counselList);
+        model.addAttribute("conversationList", conversationList);
+
+        return "chatView";
+    }
+
 }

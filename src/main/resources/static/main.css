@@ -128,3 +128,24 @@ button:hover {
 .ai-message {
     line-height: 1.5;  /* 글자의 라인 간격을 1.5배로 조절 */
 }
+
+/* 기본 링크 스타일 */
+.sidebar a {
+    text-decoration: none; /* 밑줄 제거 */
+    color: #000;
+}
+
+/* 방문한 링크 스타일 */
+.sidebar a:visited {
+    color: #000;
+}
+
+.sidebar a:hover {
+    background-color: #cccccc;
+}
+
+.title {
+    text-decoration: none;
+    color: #000;
+}
+

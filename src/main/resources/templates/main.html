@@ -40,11 +40,11 @@
 
 <!-- Navbar -->
 <div class="navbar">
-    <div class="navbar-brand">감정 쓰레기통</div>
+    <div class="navbar-brand"><a href="/main" class="title">감정 쓰레기통</a></div>
     <div class="navbar-menu">
         <a href="#">커뮤니티</a>
         <a href="#">마이페이지</a>
-        <a href="#">로그아웃</a>
+        <a href="/members/logout">로그아웃</a>
     </div>
 </div>
 
@@ -53,6 +53,15 @@
     <aside class="sidebar">
         <h3>상담 내역</h3>
         <!-- 상담 내역을 나열할 부분 -->
+        <ul>
+            <li th:each="counselList : ${counselList}" style="margin-bottom: 10px;">
+                <a th:href="@{/chatGPT/completion/chat/{JSESSIONID}(JSESSIONID=${counselList.JSESSIONID})}">
+                    <span class="counselList">
+                        <span th:text="${counselList.title}"></span>
+                    </span>
+                </a>
+            </li>
+        </ul>
     </aside>
 
     <!-- Main Content -->
@@ -64,22 +73,22 @@
         <!-- 필요한 만큼의 상담 모드 버튼을 추가 -->
 
         <!-- 고민 입력 창 -->
-        <form action="/chatGpt/completion/chat" method="post">
+        <form action="/chatGPT/completion/chat" method="post">
             <div class="input-area">
                 <h3>상담 하기</h3>
                 <input type="hidden" name="counselMode" id="counselMode" value="">
                 <textarea name="message" rows="4" placeholder="어떤 고민이 있나요?"></textarea>
                 <button id="submit-button" type="submit" class="submit-button">상담 요청</button>
             </div>
+            <!-- 로딩 애니메이션 -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+            </div>
         </form>
 
     </main>
 </div>
 
-<!-- 로딩 애니메이션 -->
-<div id="loading" class="loading">
-    <div class="spinner"></div>
-</div>
 
 </body>
 </html>

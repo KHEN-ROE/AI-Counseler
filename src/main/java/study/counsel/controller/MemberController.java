@@ -136,9 +136,11 @@ public class MemberController {
         return "redirect:/main";
     }
 
-    @PostMapping("/logout")
-    public String logout() {
-        return null;
+    @GetMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        memberservice.logout(request);
+        return "redirect:/";
     }
+
 
 }

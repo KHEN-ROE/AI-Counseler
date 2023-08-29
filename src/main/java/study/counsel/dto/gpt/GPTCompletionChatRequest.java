@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
@@ -30,14 +31,16 @@ public class GPTCompletionChatRequest {
 
     private Integer maxTokens;
 
-    public static ChatCompletionRequest of(GPTCompletionChatRequest request, Map<Object, List<ChatMessage>> conversationHistory, HttpServletRequest httpServletRequest) {
+    public static ChatCompletionRequest of(GPTCompletionChatRequest request, Map<String, List<ChatMessage>> conversationHistory, HttpServletRequest httpServletRequest) {
 
-        Object loginMember = httpServletRequest.getSession().getAttribute("loginMember");
+
+        HttpSession session = httpServletRequest.getSession();
+        String sessionId = session.getId();
 
         return ChatCompletionRequest.builder()
                 .model(request.getModel())
 //                .messages(convertChatMessage(request)) // message에 role, content 포함됨.
-                .messages(conversationHistory.get(loginMember)) // map에서 list를 꺼낸다
+                .messages(conversationHistory.get(sessionId)) // map에서 list를 꺼낸다
                 .maxTokens(request.getMaxTokens())
                 .build();
     }

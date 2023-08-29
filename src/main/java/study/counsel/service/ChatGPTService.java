@@ -5,19 +5,22 @@ import com.theokanning.openai.completion.chat.ChatMessage;
 import com.theokanning.openai.service.OpenAiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.counsel.dto.gpt.GPTCompletionChatRequest;
 import study.counsel.dto.gpt.GPTCompletionChatResponse;
-import study.counsel.entity.GPTAnswer;
-import study.counsel.entity.GPTQuestion;
+import study.counsel.entity.CounselHistory;
 import study.counsel.entity.Member;
-import study.counsel.repository.GPTAnswerRepository;
-import study.counsel.repository.GPTQuestionRepository;
+import study.counsel.repository.CounselHistoryRepository;
 import study.counsel.repository.MemberRepository;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -28,15 +31,13 @@ public class ChatGPTService {
 
     private final OpenAiService openAiService;
 
-    private final GPTQuestionRepository gptQuestionRepository;
-
-    private final GPTAnswerRepository gptAnswerRepository;
-
     private final MemberRepository memberRepository;
+
+    private final CounselHistoryRepository counselHistoryRepository;
 
     // 동시성 문제 해결과 데이터의 순서 유지를 위해 이 구현체 사용.
     // 생각해보니까 순서는 리스트에서 지켜지기 때문에, 굳이 맵에서 순서를 고려할 필요는 없을 듯
-    Map<Object, List<ChatMessage>> conversationHistory = Collections.synchronizedMap(new LinkedHashMap<>()); // 식별자, conversationList(키, 값)
+    Map<String, List<ChatMessage>> conversationHistory = Collections.synchronizedMap(new LinkedHashMap<>()); // 식별자, conversationList(키, 값)
 
     // SYSTEM에 역할 부여
     String prompt1 = "당신은 이제 고민상담 전문가입니다. "
@@ -53,7 +54,7 @@ public class ChatGPTService {
     String prompt3 = "당신은 연애상담 전문가입니다. 사용자의 이성에 대한 고민을 상담해주세요" +
             "인공지능임을 밝히지 마세요.";
 
-    public List<ChatMessage> completionChat(GPTCompletionChatRequest request, HttpServletRequest httpServletRequest) {
+    public List<CounselHistory> completionChat(GPTCompletionChatRequest request, HttpServletRequest httpServletRequest) {
 
         // 대화내역 리스트를 만든다. 그 안에 리스트를 넣는다(역할과 content로 구성된 ChatMessage 인터페이스 쓰면 됨),
         // 맨 처음 요소로는 system, content가 온다.
@@ -65,15 +66,16 @@ public class ChatGPTService {
 
         Member findMember = memberRepository.findByMemberId(request.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
 
-        // 세션에서 식별자 가져옴
-        Object loginMember = httpServletRequest.getSession().getAttribute("loginMember");
+        // 나중에 엔티티에 저장할 때 필요(식별자로 쓸 예정)
+        HttpSession session = httpServletRequest.getSession();
+        String sessionId = session.getId();
 
-        if (loginMember == null) {
+        if (sessionId == null) {
             throw new IllegalStateException("로그인하지 않은 사용자");
         }
 
         // 기존의 대화 내용을 가져옴
-        List<ChatMessage> conversationList = conversationHistory.get(loginMember); // "role", "content"만 들어감
+        List<ChatMessage> conversationList = conversationHistory.get(sessionId); // "role", "content"만 들어감
 
 
         // 대화 내용이 없다면 새 리스트 생성
@@ -93,7 +95,7 @@ public class ChatGPTService {
         log.info("대화 내역={}", conversationList);
 
         // 업데이트된 대화 내용을 다시 저장
-        conversationHistory.put(loginMember, conversationList);
+        conversationHistory.put(sessionId, conversationList);
 
         log.info("Map에 있는 내용={}", conversationHistory);
 
@@ -128,15 +130,39 @@ public class ChatGPTService {
         // ai의 답변 또한 리스트에 저장한다.
         conversationList.add(new ChatMessage("assistant", responseMessage));
 
-        GPTAnswer gptAnswer = saveAnswer(messages, findMember);
+        // List를 String 으로 변환
+        String answerMsg = getAnswerToString(messages);
 
-        saveQuestion(request.getMessage(), gptAnswer, findMember);
+        // 상담 내역 리스트에 표시될 제목은 6자로 자름
+        String title = getTitle(request);
 
-        return conversationList;
+        CounselHistory counselHistory = new CounselHistory(title, request.getMessage(), answerMsg, findMember, sessionId);
+
+        counselHistoryRepository.save(counselHistory);
+
+        return counselHistoryRepository.findByJSESSIONID(sessionId);
+    }
+
+    @NotNull
+    private static String getTitle(GPTCompletionChatRequest request) {
+        String title = "";
+        if (request.getMessage().length() >= 8) {
+            title = request.getMessage().substring(0, 8) + "...";
+        } else {
+            title = request.getMessage();
+        }
+        return title;
+    }
+
+    @NotNull
+    private static String getAnswerToString(List<String> messages) {
+        return messages.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining());
     }
 
     private String getPromptMode(String counselMode) {
-        Map<String, String> promptModeMap = new HashMap<>();
+        Map<String, String> promptModeMap = new ConcurrentHashMap<>();
         promptModeMap.put("친절한 상담", prompt1);
         promptModeMap.put("독설가", prompt2);
         promptModeMap.put("연애 상담", prompt3);
@@ -144,18 +170,27 @@ public class ChatGPTService {
         return promptModeMap.getOrDefault(counselMode, prompt1);
     }
 
-    private void saveQuestion(String question, GPTAnswer answer, Member member) {
-        GPTQuestion questionEntity = new GPTQuestion(question, answer, member);
-        gptQuestionRepository.save(questionEntity);
+    public List<CounselHistory> getCounselList(HttpServletRequest request) {
+
+        Object loginMember = request.getSession().getAttribute("loginMember");
+        Member findMember = memberRepository.findByMemberId(loginMember.toString()).orElseThrow(() -> new IllegalStateException("존재하지 않는 회원"));
+        Long id = findMember.getId();
+
+        List<CounselHistory> rawList = counselHistoryRepository.findByMemberId(id);
+
+        //JSESSIONID 기준으로 중복 제거
+        return rawList.stream()
+                .filter(distinctByKey(CounselHistory::getJSESSIONID))
+                .collect(Collectors.toList());
     }
 
-    private GPTAnswer saveAnswer(List<String> response, Member member) {
-
-        String answer = response.stream()
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining());
-
-        return gptAnswerRepository.save(new GPTAnswer(answer, member));
+    // 주어진 키에 따라 중복을 제거하는 유틸리티 메서드
+    public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
+        Set<Object> seen = ConcurrentHashMap.newKeySet();
+        return t -> seen.add(keyExtractor.apply(t));
     }
 
+    public List<CounselHistory> getCounselListDetail(String JSESSIONID) {
+        return counselHistoryRepository.findByJSESSIONID(JSESSIONID);
+    }
 }
