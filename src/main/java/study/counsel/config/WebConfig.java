@@ -14,6 +14,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(new LoginCheckInterceptor())
                 .order(1)
                 .addPathPatterns("/**") // 모든 경로에 적용
-                .excludePathPatterns("/", "/members/**", "/error"); // 미적용
+                .excludePathPatterns("/", "/members/**", "/error", "/favicon.ico", "/**.css"); // 미적용
     }
 }

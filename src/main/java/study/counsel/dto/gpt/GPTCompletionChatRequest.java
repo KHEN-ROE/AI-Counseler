@@ -16,17 +16,17 @@ import java.util.Map;
 @AllArgsConstructor
 public class GPTCompletionChatRequest {
 
-    @NotNull
     private String model;
 
-    @NotNull
     private String role;
 
     @NotNull
     private String message;
 
-    @NotNull
     private String memberId;
+
+    @NotNull
+    private String counselMode;
 
     private Integer maxTokens;
 
@@ -48,6 +48,4 @@ public class GPTCompletionChatRequest {
 //        return List.of(new ChatMessage("system", "당신은 웨이트 트레이닝 전문가입니다. 20대 여성처럼 친근하게 답변해주세요.")
 //                ,new ChatMessage(request.getRole(), request.getMessage()));
 //    }
-
-
 }

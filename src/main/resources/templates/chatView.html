@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>상담 채팅</title>
+  <link rel="stylesheet" th:href="@{/main.css}"/>
+</head>
+<body>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const loadingElement = document.getElementById('loading');
+    const submitButton = document.querySelector('button[type="submit"]');
+
+    // 상담 요청 버튼을 눌렀을 때
+    submitButton.addEventListener('click', function (e) {
+      // 응답을 기다리는 동안 로딩 애니메이션 표시
+      loadingElement.style.display = 'block';
+
+      // 예: AJAX 요청을 사용해서 서버에 데이터를 전송하고 응답을 받으면 로딩 애니메이션을 숨깁니다.
+      // 아래는 예시이므로 실제 요청 코드와 맞게 수정해야 합니다.
+      /*
+      fetch('/chatGpt/completion/chat', {
+          method: 'POST',
+          // ... 다른 옵션 ...
+      })
+      .then(response => response.json())
+      .then(data => {
+          // 응답 처리
+          // ...
+
+          // 응답 처리 후 로딩 애니메이션 숨기기
+          loadingElement.style.display = 'none';
+      })
+      .catch(error => {
+          console.error('Error:', error);
+          loadingElement.style.display = 'none';
+      });
+
+      e.preventDefault(); // 기본 form 제출 방식 방지 (AJAX 요청을 사용하는 경우에만)
+      */
+    });
+  });
+
+</script>
+
+<!-- Navbar -->
+<div class="navbar">
+  <div class="navbar-brand">감정 쓰레기통</div>
+  <div class="navbar-menu">
+    <a href="#">커뮤니티</a>
+    <a href="#">마이페이지</a>
+    <a href="#">로그아웃</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h3>상담 내역</h3>
+    <!-- 상담 내역을 나열할 부분 -->
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <h2>상담 채팅</h2>
+
+    <!-- 채팅 내역 표시 -->
+    <div class="chat-area">
+      <ul>
+        <!-- 채팅 내역을 순회하며 출력 -->
+        <li th:each="chat : ${conversationList}">
+
+                    <span th:if="${chat.role} == 'user'" class="user-message">
+                        <strong>나:</strong> <span th:text="${chat.content}"></span>
+                    </span>
+
+          <span th:if="${chat.role} == 'assistant'" class="ai-message">
+                        <strong>AI:</strong> <span th:text="${chat.content}"></span>
+                    </span>
+        </li>
+
+      </ul>
+    </div>
+
+    <!-- 새로운 메시지 입력 폼 -->
+    <form action="/chatGpt/completion/chat" method="post">
+      <div class="input-area">
+        <h3>상담 하기</h3>
+        <input type="hidden" name="counselMode" id="counselMode" value="">
+        <textarea name="message" rows="4" placeholder="어떤 고민이 있나요?"></textarea>
+        <button type="submit">상담 요청</button>
+      </div>
+    </form>
+  </main>
+</div>
+
+<!-- 로딩 애니메이션 -->
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+</div>
+
+</body>
+</html>

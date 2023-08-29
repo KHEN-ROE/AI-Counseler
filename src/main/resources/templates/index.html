@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>홈페이지</title>
+    <link rel="stylesheet" th:href="@{/styles.css}" />
+</head>
+<body>
+<div class="container">
+    <h1>감정 쓰레기통에 오신 것을 환영합니다.</h1>
+
+    <a th:href="@{/members/login}"><button>로그인</button></a>
+    <a th:href="@{/members/join}"><button>회원가입</button></a>
+</div>
+</body>
+</html>

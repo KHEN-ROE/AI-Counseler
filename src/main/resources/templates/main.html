@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>감정 쓰레기통</title>
+    <link rel="stylesheet" th:href="@{/main.css}"/>
+</head>
+<body>
+
+<!--active 이벤트와, 클릭한 값을 저장하기 위해 필요-->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modeButtons = document.querySelectorAll('.mode-button');
+        const counselModeInput = document.getElementById('counselMode'); // 히든 필드 선택
+        const loadingElement = document.getElementById('loading');
+
+        modeButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                // 모든 버튼의 'active' 클래스 제거
+                modeButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // 클릭된 버튼에 'active' 클래스 추가
+                this.classList.add('active');
+
+                // 클릭된 상담 모드 값을 히든 필드에 저장
+                counselModeInput.value = this.innerText;
+
+                // 제출 버튼에 이벤트 리스너 추가
+                document.getElementById('submit-button').addEventListener('click', function () {
+                    loadingElement.style.display = 'block'; // 로딩 애니메이션 표시
+                });
+            });
+        });
+    });
+
+</script>
+
+
+<!-- Navbar -->
+<div class="navbar">
+    <div class="navbar-brand">감정 쓰레기통</div>
+    <div class="navbar-menu">
+        <a href="#">커뮤니티</a>
+        <a href="#">마이페이지</a>
+        <a href="#">로그아웃</a>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h3>상담 내역</h3>
+        <!-- 상담 내역을 나열할 부분 -->
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+        <h2>상담 모드 선택</h2>
+        <button type="button" class="mode-button">친절한 상담</button>
+        <button type="button" class="mode-button">독설가</button>
+        <button type="button" class="mode-button">연애 상담</button>
+        <!-- 필요한 만큼의 상담 모드 버튼을 추가 -->
+
+        <!-- 고민 입력 창 -->
+        <form action="/chatGpt/completion/chat" method="post">
+            <div class="input-area">
+                <h3>상담 하기</h3>
+                <input type="hidden" name="counselMode" id="counselMode" value="">
+                <textarea name="message" rows="4" placeholder="어떤 고민이 있나요?"></textarea>
+                <button id="submit-button" type="submit" class="submit-button">상담 요청</button>
+            </div>
+        </form>
+
+    </main>
+</div>
+
+<!-- 로딩 애니메이션 -->
+<div id="loading" class="loading">
+    <div class="spinner"></div>
+</div>
+
+</body>
+</html>

@@ -17,7 +17,7 @@ public class MemberFormDto {
     @NotBlank(message = "이름을 입력해주세요")
     private String username;
 
-    @NotBlank(message = "활동명을 입력해주세요")
+    @NotBlank(message = "별명을 입력해주세요")
     private String nickname;
 
     @NotBlank(message = "이메일을 입력해주세요")

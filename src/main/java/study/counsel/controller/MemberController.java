@@ -15,25 +15,24 @@ import study.counsel.exception.MemberAlreadyExistsException;
 import study.counsel.service.MemberService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.Bidi;
 
 
 @Slf4j
-@RestController
+@Controller
 @RequestMapping("/members")
 @RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberservice;
 
-    @GetMapping("/new")
+    @GetMapping("/join")
     public String MemberForm(Model model) {
         model.addAttribute(new MemberFormDto());
         return "members/memberCreateForm";
     }
 
-    @PostMapping("/new")
-    public String createMember(@Validated @RequestBody MemberFormDto memberFormDto, BindingResult bindingResult, Model model) {
+    @PostMapping("/join")
+    public String createMember(@Validated MemberFormDto memberFormDto, BindingResult bindingResult, Model model) {
 
         // 입력값에 오류있으면(검증 실패시) bindingResult에 담아서 다시 form으로 이동
         if (bindingResult.hasErrors()) {
@@ -111,8 +110,14 @@ public class MemberController {
         return "redirect:/";
     }
 
+    @GetMapping("/login")
+    public String login(Model model) {
+        model.addAttribute(new LoginDto());
+        return "members/loginForm";
+    }
+
     @PostMapping("/login")
-    public String login(@Validated @RequestBody LoginDto loginDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
+    public String login(@Validated LoginDto loginDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
 
         log.info("받은 정보 = {}", loginDto);
 
@@ -128,7 +133,12 @@ public class MemberController {
             model.addAttribute("errorMessage", e.getMessage());
         }
 
-        return "redirect:/";
+        return "redirect:/main";
+    }
+
+    @PostMapping("/logout")
+    public String logout() {
+        return null;
     }
 
 }

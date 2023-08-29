@@ -39,14 +39,21 @@ public class ChatGPTService {
     Map<Object, List<ChatMessage>> conversationHistory = Collections.synchronizedMap(new LinkedHashMap<>()); // 식별자, conversationList(키, 값)
 
     // SYSTEM에 역할 부여
-    String prompt = "당신은 이제 고민상담 전문가입니다. "
+    String prompt1 = "당신은 이제 고민상담 전문가입니다. "
             + "사용자의 고민을 들어주고 공감해주고 위로해주면 됩니다. "
             + "현실적인 해결책도 제시해주세요 "
             + "20대 여성처럼 친근하게 답변해주세요. "
             + "인공지능임을 밝히지 마세요. "
             + "그리고 당신의 이름은 이제 연수입니다.";
 
-    public GPTCompletionChatResponse completionChat(GPTCompletionChatRequest request, HttpServletRequest httpServletRequest) {
+    String prompt2 = "당신은 독설가입니다. 사용자의 고민들 들어주고 따끔한 충고를 해주세요. 냉정하고 차갑게 말하세요." +
+            "현실적인 해결방법을 제시하세요" +
+            "인공지능임을 밝히지 마세요.";
+
+    String prompt3 = "당신은 연애상담 전문가입니다. 사용자의 이성에 대한 고민을 상담해주세요" +
+            "인공지능임을 밝히지 마세요.";
+
+    public List<ChatMessage> completionChat(GPTCompletionChatRequest request, HttpServletRequest httpServletRequest) {
 
         // 대화내역 리스트를 만든다. 그 안에 리스트를 넣는다(역할과 content로 구성된 ChatMessage 인터페이스 쓰면 됨),
         // 맨 처음 요소로는 system, content가 온다.
@@ -68,13 +75,18 @@ public class ChatGPTService {
         // 기존의 대화 내용을 가져옴
         List<ChatMessage> conversationList = conversationHistory.get(loginMember); // "role", "content"만 들어감
 
+
         // 대화 내용이 없다면 새 리스트 생성
         // 그리고 시스템의 역할 부여
         if (conversationList == null) {
             conversationList = new ArrayList<>();
+
+            String counselMode = request.getCounselMode();
+            String prompt = getPromptMode(counselMode);
+
             conversationList.add(new ChatMessage("system", prompt));
         }
-        
+
         // 리스트에 사용자의 요청 저장
         conversationList.add(new ChatMessage(request.getRole(), request.getMessage()));
 
@@ -120,7 +132,16 @@ public class ChatGPTService {
 
         saveQuestion(request.getMessage(), gptAnswer, findMember);
 
-        return response;
+        return conversationList;
+    }
+
+    private String getPromptMode(String counselMode) {
+        Map<String, String> promptModeMap = new HashMap<>();
+        promptModeMap.put("친절한 상담", prompt1);
+        promptModeMap.put("독설가", prompt2);
+        promptModeMap.put("연애 상담", prompt3);
+
+        return promptModeMap.getOrDefault(counselMode, prompt1);
     }
 
     private void saveQuestion(String question, GPTAnswer answer, Member member) {
