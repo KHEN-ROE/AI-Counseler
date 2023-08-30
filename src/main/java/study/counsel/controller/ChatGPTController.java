@@ -27,10 +27,14 @@ public class ChatGPTController {
     // 2. 토큰 수를 체크 한다.
     // 3. 총 토큰 수가 4097을 초과하면 그 이하가 될 때까지 오래된 것부터 제거한다.
     // 4. 위 조건을 만족하면 open AI 서버에 요청을 보낸다.
-    // 현재 빠뜨린 점 : 이전 대화 내역을 사용자가 확인하기 위해서 상담번호, 질문, 답변 모두를 포함한 엔티티가 필요할 듯 - 질문, 답변을 나눠서 저장할 필요 없다
-    // 로그인할 때마다 JSESSIONID 는 동일한가? 새로운 브라우저 세션 내에서 로그인하면 달라진다. 그러나 동일한 세션 내에서 로갓했다가 로긴하면 같을 수 있음.
-    // 지우기 버튼을 만들어서 LIST에 있는 대화 내역을 지워야할 듯.
-    // 상담 모드 만들고
+    // 문제점 : 사용자가 새로운 대화를 시작하면 리스트를 비워야함. - 리스트 건드리지 말고, 맵에 새로운 리스트를 만들면 될듯
+    // 그리고 같은 세션 내에서 새로운 대화를 계속해도 하나의 스레드 안에 대화가 다 들어감
+    // 대화 페이지를 벗어나거나, new chat을 누르면 리스트를 비운다? jsessionid 도 바꿔야할 것 같은데. 이걸 바꾸기보다, 
+    // 식별자를 다른 걸로 교체하자. auto increment 안 걸고 하면 되지 않을까
+    // 과거 대화 내역에서 채팅을 계속 이어가려면 어떻게 해야 하는가? 일단 엔티티에 대화 모드도 저장해야 할듯
+    // chatVIew에 새채팅 버튼 만든다. 서버에 별도의 컨트롤러 만들고 이거 클릭하면 식별자 +1 시킨다. 식별자만 completionChat에 전달
+    // main.html의 상담 요청 버튼도 클릭 시 식별자 +1 시킨다.
+    // 과거 대화내역에서 채팅 이어나가기 기능 -> 식별자를 전달하면 안 될까?
 
     @PostMapping("/completion/chat")
     public String completionChat(final @ModelAttribute @Valid GPTCompletionChatRequest request, HttpServletRequest httpServletRequest, Model model) {
@@ -43,8 +47,8 @@ public class ChatGPTController {
         Object loginMember = httpServletRequest.getSession().getAttribute("loginMember");
         request.setMemberId(loginMember.toString()); // 타입 변환 필요
 
-        List<CounselHistory> conversationList = chatGPTService.completionChat(request, httpServletRequest);
         List<CounselHistory> counselList = chatGPTService.getCounselList(httpServletRequest);
+        List<CounselHistory> conversationList = chatGPTService.completionChat(request, httpServletRequest);
 
         model.addAttribute("counselList", counselList);
         model.addAttribute("conversationList", conversationList);
@@ -57,16 +61,18 @@ public class ChatGPTController {
 
         List<CounselHistory> counselList = chatGPTService.getCounselList(request);
 
+        log.info("counselList={}", counselList);
+
         model.addAttribute("counselList", counselList);
 
         return "chatView";
     }
 
-    @GetMapping("/completion/chat/{JSESSIONID}")
-    public String getCounselListDetail(@PathVariable String JSESSIONID, HttpServletRequest request, Model model) {
+    @GetMapping("/completion/chat/{chatSequenceNumberId}")
+    public String getCounselListDetail(@PathVariable @Valid Long chatSequenceNumberId, HttpServletRequest request, Model model) {
 
-        List<CounselHistory> conversationList = chatGPTService.getCounselListDetail(JSESSIONID);
         List<CounselHistory> counselList = chatGPTService.getCounselList(request);
+        List<CounselHistory> conversationList = chatGPTService.getCounselListDetail(chatSequenceNumberId);
 
         model.addAttribute("counselList", counselList);
         model.addAttribute("conversationList", conversationList);

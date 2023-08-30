@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.counsel.dto.gpt.GPTCompletionChatRequest;
 import study.counsel.dto.gpt.GPTCompletionChatResponse;
+import study.counsel.entity.ChatSequenceNumber;
 import study.counsel.entity.CounselHistory;
 import study.counsel.entity.Member;
+import study.counsel.repository.ChatSequenceNumberRepository;
 import study.counsel.repository.CounselHistoryRepository;
 import study.counsel.repository.MemberRepository;
 
@@ -35,9 +37,12 @@ public class ChatGPTService {
 
     private final CounselHistoryRepository counselHistoryRepository;
 
+    private final ChatSequenceNumberRepository chatSequenceNumberRepository;
+
     // 동시성 문제 해결과 데이터의 순서 유지를 위해 이 구현체 사용.
     // 생각해보니까 순서는 리스트에서 지켜지기 때문에, 굳이 맵에서 순서를 고려할 필요는 없을 듯
-    Map<String, List<ChatMessage>> conversationHistory = Collections.synchronizedMap(new LinkedHashMap<>()); // 식별자, conversationList(키, 값)
+//    Map<String, List<ChatMessage>> conversationHistory = Collections.synchronizedMap(new LinkedHashMap<>()); // 식별자, conversationList(키, 값)
+    Map<String, List<ChatMessage>> conversationHistory = new ConcurrentHashMap<>(); // 식별자, conversationList(키, 값)
 
     // SYSTEM에 역할 부여
     String prompt1 = "당신은 이제 고민상담 전문가입니다. "
@@ -47,11 +52,14 @@ public class ChatGPTService {
             + "인공지능임을 밝히지 마세요. "
             + "그리고 당신의 이름은 이제 연수입니다.";
 
-    String prompt2 = "당신은 독설가입니다. 사용자의 고민들 들어주고 따끔한 충고를 해주세요. 냉정하고 차갑게 말하세요." +
-            "현실적인 해결방법을 제시하세요" +
-            "인공지능임을 밝히지 마세요.";
+    String prompt2 = "당신은 독설가입니다. 사용자의 고민들 들어주고 따끔한 충고를 해주세요. 냉정하고 차갑게 말하세요. " +
+            "높임말을 쓰지말고 반말을 하세요. " +
+            "권위적인 말투를 사용하세요. " +
+            "현실적인 해결방법을 제시하세요. " +
+            "인공지능임을 밝히지 마세요. " +
+            "독설가라고 밝혀도 문제는 없습니다.";
 
-    String prompt3 = "당신은 연애상담 전문가입니다. 사용자의 이성에 대한 고민을 상담해주세요" +
+    String prompt3 = "당신은 연애상담 전문가입니다. 사용자의 이성에 대한 고민을 상담해주세요. " +
             "인공지능임을 밝히지 마세요.";
 
     public List<CounselHistory> completionChat(GPTCompletionChatRequest request, HttpServletRequest httpServletRequest) {
@@ -66,9 +74,10 @@ public class ChatGPTService {
 
         Member findMember = memberRepository.findByMemberId(request.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
 
-        // 나중에 엔티티에 저장할 때 필요(식별자로 쓸 예정)
         HttpSession session = httpServletRequest.getSession();
+        // 맵의 key로 사용
         String sessionId = session.getId();
+        ChatSequenceNumber chatSequenceNumber = (ChatSequenceNumber) session.getAttribute("chatSequenceNumber");
 
         if (sessionId == null) {
             throw new IllegalStateException("로그인하지 않은 사용자");
@@ -77,17 +86,19 @@ public class ChatGPTService {
         // 기존의 대화 내용을 가져옴
         List<ChatMessage> conversationList = conversationHistory.get(sessionId); // "role", "content"만 들어감
 
-
         // 대화 내용이 없다면 새 리스트 생성
-        // 그리고 시스템의 역할 부여
+        // 그리고 시스템의 역할 부여 -> counselMode가 null이 아니면, 리스트를 비우고 새로운 역할 부여하는 걸로 해야할 듯
+
         if (conversationList == null) {
             conversationList = new ArrayList<>();
-
-            String counselMode = request.getCounselMode();
-            String prompt = getPromptMode(counselMode);
-
-            conversationList.add(new ChatMessage("system", prompt));
+            registerPrompt(request, conversationList);
         }
+
+        if (!request.getCounselMode().equals("")) {
+            conversationList.clear();
+            registerPrompt(request, conversationList);
+        }
+
 
         // 리스트에 사용자의 요청 저장
         conversationList.add(new ChatMessage(request.getRole(), request.getMessage()));
@@ -133,19 +144,26 @@ public class ChatGPTService {
         // List를 String 으로 변환
         String answerMsg = getAnswerToString(messages);
 
-        // 상담 내역 리스트에 표시될 제목은 6자로 자름
+        // 상담 내역 리스트에 표시될 제목은 8자로 자름
         String title = getTitle(request);
 
-        CounselHistory counselHistory = new CounselHistory(title, request.getMessage(), answerMsg, findMember, sessionId);
+        CounselHistory counselHistory = new CounselHistory(title, request.getMessage(), answerMsg, findMember, chatSequenceNumber);
 
         counselHistoryRepository.save(counselHistory);
 
-        return counselHistoryRepository.findByJSESSIONID(sessionId);
+        return counselHistoryRepository.findByChatSequenceNumber(chatSequenceNumber);
+    }
+
+    private void registerPrompt(GPTCompletionChatRequest request, List<ChatMessage> conversationList) {
+        String counselMode = request.getCounselMode();
+        String prompt = getPromptMode(counselMode);
+
+        conversationList.add(new ChatMessage("system", prompt));
     }
 
     @NotNull
     private static String getTitle(GPTCompletionChatRequest request) {
-        String title = "";
+        String title;
         if (request.getMessage().length() >= 8) {
             title = request.getMessage().substring(0, 8) + "...";
         } else {
@@ -178,9 +196,11 @@ public class ChatGPTService {
 
         List<CounselHistory> rawList = counselHistoryRepository.findByMemberId(id);
 
-        //JSESSIONID 기준으로 중복 제거
+        log.info("rawList={}", rawList);
+
+        //식별자 기준으로 중복 제거
         return rawList.stream()
-                .filter(distinctByKey(CounselHistory::getJSESSIONID))
+                .filter(distinctByKey(CounselHistory::getChatSequenceNumber))
                 .collect(Collectors.toList());
     }
 
@@ -190,7 +210,12 @@ public class ChatGPTService {
         return t -> seen.add(keyExtractor.apply(t));
     }
 
-    public List<CounselHistory> getCounselListDetail(String JSESSIONID) {
-        return counselHistoryRepository.findByJSESSIONID(JSESSIONID);
+    public List<CounselHistory> getCounselListDetail(Long chatSequenceNumberId) { 
+
+        ChatSequenceNumber chatSequenceNumber = chatSequenceNumberRepository.findById(chatSequenceNumberId).orElseThrow(() -> new IllegalStateException("존재하지 않는 대화내역"));
+
+        return counselHistoryRepository.findByChatSequenceNumber(chatSequenceNumber); // db에서 대화 내역 찾아서, 리스트로 만들고 
+                                                                                        // completionChat에 던져주면 과거 대화에서 이어나갈 수 있을 것 같은데
+                                                                                        // 그 전에 db에 대화모드를 저장해야함
     }
 }

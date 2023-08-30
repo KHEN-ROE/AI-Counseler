@@ -13,6 +13,7 @@
         const modeButtons = document.querySelectorAll('.mode-button');
         const counselModeInput = document.getElementById('counselMode'); // 히든 필드 선택
         const loadingElement = document.getElementById('loading');
+        const messageTextarea = document.querySelector('textarea[name="message"]')
 
         modeButtons.forEach(button => {
             button.addEventListener('click', function () {
@@ -27,10 +28,35 @@
                 // 클릭된 상담 모드 값을 히든 필드에 저장
                 counselModeInput.value = this.innerText;
 
-                // 제출 버튼에 이벤트 리스너 추가
-                document.getElementById('submit-button').addEventListener('click', function () {
-                    loadingElement.style.display = 'block'; // 로딩 애니메이션 표시
-                });
+            });
+        });
+
+        // 제출 버튼에 이벤트 리스너 추가
+        document.getElementById('submit-button').addEventListener('click', function (event) {
+            if (counselModeInput.value === '') {
+                alert('상담 모드를 선택해주세요.');
+                event.preventDefault();
+                return;
+            }
+
+            if (messageTextarea.value.trim() === '') {
+                alert('고민을 입력해주세요!');
+                event.preventDefault();
+                return;
+            }
+
+            loadingElement.style.display = 'block'; // 로딩 애니메이션 표시
+
+            // 서버에 시퀀스 값을 증가시키는 요청
+            fetch('/increaseSeq',{
+                method: 'POST',
+            }).then(response => {
+                if (response.ok) {
+                    // 시퀀스 증가 성공 시, 폼 제출
+                    document.querySelector('form').submit();
+                } else {
+                    alert('시퀀스 증가 실패')
+                }
             });
         });
     });
@@ -55,7 +81,7 @@
         <!-- 상담 내역을 나열할 부분 -->
         <ul>
             <li th:each="counselList : ${counselList}" style="margin-bottom: 10px;">
-                <a th:href="@{/chatGPT/completion/chat/{JSESSIONID}(JSESSIONID=${counselList.JSESSIONID})}">
+                <a th:href="@{/chatGPT/completion/chat/{chatSequenceNumberId}(chatSequenceNumberId=${counselList.chatSequenceNumber.id})}">
                     <span class="counselList">
                         <span th:text="${counselList.title}"></span>
                     </span>
@@ -78,11 +104,12 @@
                 <h3>상담 하기</h3>
                 <input type="hidden" name="counselMode" id="counselMode" value="">
                 <textarea name="message" rows="4" placeholder="어떤 고민이 있나요?"></textarea>
-                <button id="submit-button" type="submit" class="submit-button">상담 요청</button>
+                <button type="button" id="submit-button" class="submit-button">상담 요청</button>
             </div>
             <!-- 로딩 애니메이션 -->
             <div id="loading" class="loading">
                 <div class="spinner"></div>
+                <p>10~20초 정도 소요됩니다...</p>
             </div>
         </form>
 

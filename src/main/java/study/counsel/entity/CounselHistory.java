@@ -29,14 +29,16 @@ public class CounselHistory extends BaseEntity {
     @JoinColumn(name = "memberId")
     private Member member;
 
-    private String JSESSIONID;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chatSequenceNumber_id")
+    private ChatSequenceNumber chatSequenceNumber;
 
-    public CounselHistory(String title, String question, String answer, Member member, String JSESSIONID) {
+    public CounselHistory(String title, String question, String answer, Member member, ChatSequenceNumber chatSequenceNumber) {
         this.title = title;
         this.question = question;
         this.answer = answer;
         this.member = member;
-        this.JSESSIONID = JSESSIONID;
+        this.chatSequenceNumber = chatSequenceNumber;
 
     }
 }
