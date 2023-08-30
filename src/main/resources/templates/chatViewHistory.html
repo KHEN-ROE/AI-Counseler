@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>상담 채팅</title>
+    <link rel="stylesheet" th:href="@{/main.css}"/>
+</head>
+<body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const loadingElement = document.getElementById('loading');
+        const submitButton = document.querySelector('button[type="submit"]');
+        const newChatButton = document.querySelector('button[type="button"]');
+        const messageTextarea = document.querySelector('textarea[name="message"]'); // textarea 요소 선택
+
+        // 상담 요청 버튼을 눌렀을 때
+        submitButton.addEventListener('click', function (e) {
+            if (messageTextarea.value.trim() === '') {
+                alert('고민을 입력해주세요!');
+                e.preventDefault();
+                return;
+            }
+
+            // 응답을 기다리는 동안 로딩 애니메이션 표시
+            loadingElement.style.display = 'block';
+
+        });
+
+        // 새 채팅 버튼을 눌렀을 때
+        newChatButton.addEventListener('click', function (e) {
+            loadingElement.style.display = 'block';  // 로딩 애니메이션 표시
+            fetch('/increaseSeqAndShowMain', {
+                method: 'POST',
+            }).then(response => {
+                if (response.ok) {
+                    // 시퀀스 증가 성공 시
+                    loadingElement.style.display ='none'; // 로딩 애니메이션 숨기기
+                    window.location.href = "/main"; // main.html로 리디렉션
+                } else {
+                    alert('시퀀스 증가 실패');
+                }
+            })
+
+        })
+    });
+
+</script>
+
+<!-- Navbar -->
+<div class="navbar">
+    <div class="navbar-brand"><a href="/main" class="title">감정 쓰레기통</a></div>
+    <div class="navbar-menu">
+        <a href="#">커뮤니티</a>
+        <a href="#">마이페이지</a>
+        <a href="/members/logout">로그아웃</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h3>상담 내역</h3>
+        <!-- 상담 내역을 나열할 부분 -->
+        <ul>
+            <li th:each="counselList : ${counselList}" style="margin-bottom: 10px;">
+                <a th:href="@{/chatGPT/completion/chat/{chatSequenceNumberId}(chatSequenceNumberId=${counselList.chatSequenceNumber.id})}">
+                    <span class="counselList">
+                        <span th:text="${counselList.title}"></span>
+                    </span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+        <h2>상담 채팅</h2>
+
+        <!-- 채팅 내역 표시 -->
+        <div class="chat-area">
+            <ul>
+                <!-- 채팅 내역을 순회하며 출력 -->
+                <li th:each="chat : ${conversationList}">
+
+                    <span class="user-message">
+                        <strong>나:</strong> <span th:text="${chat.question}"></span>
+                    </span>
+
+                    <br/>
+
+                    <span class="ai-message">
+                        <strong>AI:</strong> <span th:text="${chat.answer}"></span>
+                    </span>
+                </li>
+
+            </ul>
+        </div>
+
+        <!-- 새로운 메시지 입력 폼 -->
+        <form th:action="@{/chatGPT/completion/chat/{chatSequenceNumberId}(chatSequenceNumberId=${chatSequenceNumberId})}" method="post">
+        <div class="input-area">
+                <h3>상담 하기</h3>
+                <input type="hidden" name="counselMode" id="counselMode" value="">
+                <label>
+                    <textarea name="message" rows="4" placeholder="어떤 고민이 있나요?"></textarea>
+                </label>
+                <button type="submit">상담 요청</button> <button type="button">새 채팅</button>
+            </div>
+            <!-- 로딩 애니메이션 -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>15~20초 정도 소요됩니다...</p>
+            </div>
+        </form>
+    </main>
+</div>
+
+</body>
+</html>

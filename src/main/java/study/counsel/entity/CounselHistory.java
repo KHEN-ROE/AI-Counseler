@@ -33,12 +33,14 @@ public class CounselHistory extends BaseEntity {
     @JoinColumn(name = "chatSequenceNumber_id")
     private ChatSequenceNumber chatSequenceNumber;
 
-    public CounselHistory(String title, String question, String answer, Member member, ChatSequenceNumber chatSequenceNumber) {
+    private String counselMode;
+
+    public CounselHistory(String title, String question, String answer, Member member, ChatSequenceNumber chatSequenceNumber, String counselMode) {
         this.title = title;
         this.question = question;
         this.answer = answer;
         this.member = member;
         this.chatSequenceNumber = chatSequenceNumber;
-
+        this.counselMode = counselMode;
     }
 }

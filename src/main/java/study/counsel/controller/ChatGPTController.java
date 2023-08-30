@@ -10,6 +10,7 @@ import study.counsel.entity.CounselHistory;
 import study.counsel.service.ChatGPTService;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -37,7 +38,7 @@ public class ChatGPTController {
     // 과거 대화내역에서 채팅 이어나가기 기능 -> 식별자를 전달하면 안 될까?
 
     @PostMapping("/completion/chat")
-    public String completionChat(final @ModelAttribute @Valid GPTCompletionChatRequest request, HttpServletRequest httpServletRequest, Model model) {
+    public String completionChat(final @Valid GPTCompletionChatRequest request, HttpServletRequest httpServletRequest, Model model) {
 
         log.info("받은 정보={}", request);
 
@@ -69,15 +70,43 @@ public class ChatGPTController {
     }
 
     @GetMapping("/completion/chat/{chatSequenceNumberId}")
-    public String getCounselListDetail(@PathVariable @Valid Long chatSequenceNumberId, HttpServletRequest request, Model model) {
+    public String getCounselListDetail(@PathVariable Long chatSequenceNumberId, HttpServletRequest request, Model model) {
 
         List<CounselHistory> counselList = chatGPTService.getCounselList(request);
         List<CounselHistory> conversationList = chatGPTService.getCounselListDetail(chatSequenceNumberId);
 
+        // 특정 대화 내역 클릭하면 대화 식별자를 세션에 저장
+        HttpSession session = request.getSession();
+        session.setAttribute("chatSequenceNumberId", chatSequenceNumberId);
+
         model.addAttribute("counselList", counselList);
         model.addAttribute("conversationList", conversationList);
 
-        return "chatView";
+        return "chatViewHistory";
     }
 
+    // 과거 대화에서 다시 채팅
+    @PostMapping("/completion/chat/{chatSequenceNumberId}")
+    public String completionChatContinue(@PathVariable Long chatSequenceNumberId, @Valid GPTCompletionChatRequest request, HttpServletRequest httpServletRequest, Model model) {
+
+        log.info("path={}", chatSequenceNumberId);
+        log.info("request={}", request);
+
+        request.setModel("gpt-3.5-turbo");
+        request.setRole("user");
+
+        Object loginMember = httpServletRequest.getSession().getAttribute("loginMember");
+        request.setMemberId(loginMember.toString()); // 타입 변환 필요
+
+        List<CounselHistory> counselList = chatGPTService.getCounselList(httpServletRequest);
+        List<CounselHistory> conversationList = chatGPTService.completionChatContinue(chatSequenceNumberId, request, httpServletRequest);
+
+        model.addAttribute("counselList", counselList);
+        model.addAttribute("conversationList", conversationList);
+        model.addAttribute("chatSequenceNumberId", chatSequenceNumberId);
+
+        return "chatViewHistory";
+
+    }
+    
 }
