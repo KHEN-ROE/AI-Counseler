@@ -6,6 +6,7 @@ import com.theokanning.openai.service.OpenAiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.counsel.dto.gpt.GPTCompletionChatRequest;
@@ -19,6 +20,7 @@ import study.counsel.repository.MemberRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.validation.Valid;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -45,22 +47,14 @@ public class ChatGPTService {
     Map<String, List<ChatMessage>> conversationHistory = new ConcurrentHashMap<>(); // 식별자, conversationList(키, 값)
 
     // SYSTEM에 역할 부여
-    String prompt1 = "당신은 이제 고민상담 전문가입니다. "
-            + "사용자의 고민을 들어주고 공감해주고 위로해주면 됩니다. "
-            + "현실적인 해결책도 제시해주세요 "
-            + "20대 여성처럼 친근하게 답변해주세요. "
-            + "인공지능임을 밝히지 마세요. "
-            + "그리고 당신의 이름은 이제 연수입니다.";
+    @Value("${prompts.prompt1}")
+    String prompt1;
 
-    String prompt2 = "당신은 독설가입니다. 사용자의 고민들 들어주고 따끔한 충고를 해주세요. 냉정하고 차갑게 말하세요. " +
-            "높임말을 쓰지말고 반말을 하세요. " +
-            "권위적인 말투를 사용하세요. " +
-            "현실적인 해결방법을 제시하세요. " +
-            "인공지능임을 밝히지 마세요. " +
-            "독설가라고 밝혀도 문제는 없습니다.";
+    @Value("${prompts.prompt2}")
+    String prompt2;
 
-    String prompt3 = "당신은 연애상담 전문가입니다. 사용자의 이성에 대한 고민을 상담해주세요. " +
-            "인공지능임을 밝히지 마세요.";
+    @Value("${prompts.prompt3}")
+    String prompt3;
 
     public List<CounselHistory> completionChat(GPTCompletionChatRequest request, HttpServletRequest httpServletRequest) {
 
