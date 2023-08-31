@@ -241,8 +241,8 @@ public class ChatGPTService {
 
         //위 리스트에서 몇 가지를 추출해야함(1.counselMode, 2.질문, 3.답변
         for (CounselHistory counselHistory : findCounselList) {
-            if (!counselHistory.getCounselMode().equals(null)) {
-                counselMode = counselHistory.getCounselMode(); // TODO: 2023-08-31  상담 모드가 제대로 저장이 안됐다. 이 부분을 점검하자
+            if (!counselHistory.getCounselMode().equals("")) {
+                counselMode = counselHistory.getCounselMode();
             }
         }
 
