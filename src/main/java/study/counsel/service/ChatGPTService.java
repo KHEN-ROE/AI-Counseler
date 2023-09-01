@@ -80,7 +80,7 @@ public class ChatGPTService {
         List<ChatMessage> conversationList = conversationHistory.get(sessionId); // "role", "content"만 들어감
 
         // 대화 내용이 없다면 새 리스트 생성
-        // 그리고 시스템의 역할 부여 -> counselMode가 null이 아니면, 리스트를 비우고 새로운 역할 부여하는 걸로 해야할 듯
+        // 그리고 시스템의 역할 부여 -> counselMode가 null이 아니면, 리스트를 비우고 새로운 역할 부여.
         if (conversationList == null) {
             conversationList = new ArrayList<>();
             registerPrompt(request, conversationList);

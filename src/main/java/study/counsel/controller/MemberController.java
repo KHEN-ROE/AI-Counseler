@@ -7,6 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import study.counsel.dto.ConfirmPasswordDto;
 import study.counsel.dto.DeleteMemberDto;
 import study.counsel.dto.LoginDto;
@@ -32,7 +33,7 @@ public class MemberController {
     }
 
     @PostMapping("/join")
-    public String createMember(@Validated MemberFormDto memberFormDto, BindingResult bindingResult, Model model) {
+    public String createMember(@Validated MemberFormDto memberFormDto, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
 
         // 입력값에 오류있으면(검증 실패시) bindingResult에 담아서 다시 form으로 이동
         if (bindingResult.hasErrors()) {
@@ -45,12 +46,14 @@ public class MemberController {
             memberservice.createMember(memberFormDto);
         } catch (MemberAlreadyExistsException e) {
             log.info("error={}", e.getMessage());
-            model.addAttribute("errorMessage", e.getMessage());
-            return "members/memberCreateForm"; // 이렇게 하면 409에러 못띄운다. MemberAlreadyExistsException가 사실상 무의미.
+            redirectAttributes.addAttribute("errorMessage", e.getMessage());
+            return "redirect:/members/memberCreateForm"; // 이렇게 하면 409에러 못띄운다. MemberAlreadyExistsException가 사실상 무의미.
         }
 
-        // 성공하면 홈으로
-        return "redirect:/";
+        // 회원가입 성공 메시지 추가
+        redirectAttributes.addFlashAttribute("registrationSuccess", true);
+        // 다시 회원가입 폼으로
+        return "redirect:/members/join"; // redirect는 url로 이동시킴. return "템플릿명"은 뷰를 리턴
     }
 
     @PostMapping("confirm")

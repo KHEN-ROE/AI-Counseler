@@ -7,6 +7,17 @@
 </head>
 <body>
 
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const registrationSuccess = /*[[${registrationSuccess}]]*/ false;
+
+    if (registrationSuccess) {
+        alert("회원가입이 완료되었습니다.");
+        window.location.href = "/members/login";
+    }
+    /*]]>*/
+</script>
+
 <div class="container">
     <h2>회원가입</h2>
 
