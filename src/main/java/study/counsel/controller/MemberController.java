@@ -8,10 +8,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import study.counsel.dto.ConfirmPasswordDto;
-import study.counsel.dto.DeleteMemberDto;
-import study.counsel.dto.LoginDto;
-import study.counsel.dto.MemberFormDto;
+import study.counsel.dto.member.ConfirmPasswordDto;
+import study.counsel.dto.member.DeleteMemberDto;
+import study.counsel.dto.member.LoginDto;
+import study.counsel.dto.member.MemberFormDto;
 import study.counsel.exception.MemberAlreadyExistsException;
 import study.counsel.service.MemberService;
 
@@ -72,7 +72,7 @@ public class MemberController {
             model.addAttribute("errorMessage", e.getMessage());
         }
 
-        return "model/updateMemberForm";
+        return "member/updateMemberForm";
 
     }
 

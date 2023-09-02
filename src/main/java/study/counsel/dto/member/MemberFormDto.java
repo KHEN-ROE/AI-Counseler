@@ -1,4 +1,4 @@
-package study.counsel.dto;
+package study.counsel.dto.member;
 
 import lombok.Data;
 

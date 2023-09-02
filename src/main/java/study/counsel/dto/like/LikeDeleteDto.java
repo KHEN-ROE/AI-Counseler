@@ -1,4 +1,4 @@
-package study.counsel.dto;
+package study.counsel.dto.like;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,11 +9,8 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginDto {
+public class LikeDeleteDto {
 
     @NotNull
-    private String memberId;
-
-    @NotNull
-    private String password;
+    private Long commentId;
 }

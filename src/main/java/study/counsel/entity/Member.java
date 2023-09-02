@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import study.counsel.common.BaseEntity;
-import study.counsel.dto.MemberFormDto;
+import study.counsel.dto.member.MemberFormDto;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
