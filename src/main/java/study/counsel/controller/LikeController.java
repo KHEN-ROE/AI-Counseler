@@ -28,7 +28,7 @@ public class LikeController {
         likeService.addLike(addLikeDto);
     }
 
-    @DeleteMapping("/delete")
+    @PostMapping("/delete")
     public void deleteLike(@RequestBody @Valid LikeDeleteDto LikeDeleteDto) {
         likeService.deleteLike(LikeDeleteDto);
     }
