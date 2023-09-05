@@ -34,7 +34,7 @@ public class Board extends BaseEntity {
     private Member member;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> hits;
+    private List<ContentLike> contentLikes;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;

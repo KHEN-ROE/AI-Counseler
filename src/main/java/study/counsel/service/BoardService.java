@@ -2,6 +2,7 @@ package study.counsel.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import study.counsel.entity.Member;
 import study.counsel.repository.BoardRepository;
 import study.counsel.repository.MemberRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,11 +32,12 @@ public class BoardService {
 
     public Page<BoardListDto> getList(Pageable pageable) {
 
-        // BoardDto를 Board로 변환
+        // 엔티티 조회
         Page<Board> findAll = boardRepository.findAll(pageable);
+
         // 엔티티 -> dto 변환
         List<BoardListDto> collect = findAll.stream()
-                .map(b -> new BoardListDto(b.getId(), b.getTitle(), b.getMember().getMemberId(), b.getDate()))
+                .map(b -> new BoardListDto(b.getId(), b.getTitle(), b.getMember().getMemberId(), b.getDate(), b.isDeleted()))
                 .collect(Collectors.toList());
 
         return new PageImpl<>(collect, pageable, findAll.getTotalElements());
@@ -47,27 +50,31 @@ public class BoardService {
         // 필요한 정보를 BoardDetailDto에 담기
         String title = board.getTitle();
         String text = board.getText();
-        String userId = board.getMember().getMemberId();
+        String nickname = board.getMember().getNickname();
         Date date = board.getDate();
         List<CommentDto> comments = commentService.getComment(id);
 
-        return new BoardDetailDto(id, title, text, userId, date, comments);
-
+        return new BoardDetailDto(id, title, text, nickname, date, comments);
     }
 
-    public void addBoard(AddBoardDto addBoardDto) {
+    public void addBoard(AddBoardDto addBoardDto, HttpServletRequest request) {
 
-        Member findUser = memberRepository.findByMemberId(addBoardDto.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
-        Board board = Board.addBoard(addBoardDto, findUser);
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+        log.info("loginMember={}", loginMember);
+        Member findMember = memberRepository.findByMemberId(loginMember).orElseThrow(() -> new IllegalStateException("존재하지 않는 회원"));
+
+        Board board = Board.addBoard(addBoardDto, findMember);
 
         boardRepository.save(board);
 
     }
 
-    public void updateBoard(Long id, UpdateBoardDto updateBoardDto) {
+    public void updateBoard(Long id, UpdateBoardDto updateBoardDto, HttpServletRequest request) {
         Board findBoard = boardRepository.findById(id).orElseThrow(() -> new IllegalStateException("존재하지 않는 게시글"));
 
-        if (!findBoard.getMember().getMemberId().equals(updateBoardDto.getMemberId())) {
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
+        if (!findBoard.getMember().getMemberId().equals(loginMember)) {
             throw new IllegalArgumentException("일치하지 않는 사용자");
         }
 
@@ -76,15 +83,17 @@ public class BoardService {
 
     }
 
-    public void deleteBoard(Long id, DeleteBoardDto deleteBoardDto) {
+    public void deleteBoard(Long id, HttpServletRequest request) {
 
         Board findBoard = boardRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글"));
 
-        if (!findBoard.getMember().getMemberId().equals(deleteBoardDto.getMemberId())) {
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
+        if (!findBoard.getMember().getMemberId().equals(loginMember)) {
             throw new IllegalArgumentException("일치하지 않는 사용자");
         }
 
-        boardRepository.deleteById(id);
+        findBoard.setDeleted(true);
 
     }
 }

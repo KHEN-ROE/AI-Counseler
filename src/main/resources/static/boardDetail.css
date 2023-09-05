@@ -1,0 +1,165 @@
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* 기본 컨테이너 스타일 */
+.container {
+    width: 80%;
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    border-radius: 5px;
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+/* 게시글 상세보기 스타일 */
+.board-detail h3 {
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    color: #444;
+}
+
+.board-detail p {
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.board-detail .board-content {
+    border-top: 1px solid #ddd;
+    margin-top: 20px;
+    padding-top: 20px;
+}
+
+.board-detail .board-content p {
+    white-space: pre-wrap;
+}
+
+/* 댓글 영역 스타일 */
+.comments-section {
+    margin-top: 40px;
+}
+
+.comments-section h4 {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+
+.comments-section ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.comments-section ul li {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.comments-section ul li p {
+    margin: 0;
+    color: #555;
+}
+
+a, form {
+    display: inline-block;
+    margin-top: 5%;
+}
+
+/* 수정, 삭제 버튼 스타일 */
+a button, .delete_Btn {
+    cursor: pointer;
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 4px;
+    background-color: #2980b9;
+    color: #fff;
+    transition: background-color 0.3s;
+}
+
+.delete_Btn {
+    background-color: #e74c3c;
+}
+
+a .delete_Btn:hover {
+    background-color: #0056b3;
+}
+
+/* 전체 폼 스타일 */
+.replyArea {
+    width: 100%;
+    max-width: 800px;
+    margin: 20px auto;
+    border: 1px solid #e5e5e5;
+    padding: 20px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+/* 댓글 입력창 스타일 */
+textarea#text {
+    width: 95%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: vertical; /* 세로 방향으로만 크기 조절 가능하게 설정 */
+}
+
+/* '댓글 쓰기' 버튼 스타일 */
+button[type="submit"]:not(.delete_Btn) {
+    display: block;
+    margin-top: 15px;
+    padding: 10px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button[type="submit"]:not(.delete_Btn):hover {
+    background-color: #2980b9;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #f4f4f4;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.navbar-menu {
+    display: flex;
+    gap: 20px;
+}
+
+.navbar-menu a {
+    text-decoration: none;  /* 밑줄 제거 */
+    color: inherit;  /* 현재 글자색을 상속받음 */
+}
+
+.navbar-menu a:hover {
+    text-decoration: underline;  /* 호버 상태에서만 밑줄 표시 */
+}
+
+.title {
+    text-decoration: none;
+    color: #000000;
+}
+

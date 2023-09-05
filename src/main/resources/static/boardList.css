@@ -105,5 +105,24 @@ td a:hover {
 
 .title {
     text-decoration: none;
-    color: #000;
+    color: #000000;
+}
+
+.write-button {
+    margin-bottom: 20px;
+}
+
+.btn {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #45a049;
 }

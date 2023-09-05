@@ -6,6 +6,7 @@ import study.counsel.dto.comment.AddAndUpdateCommentDto;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -20,16 +21,19 @@ public class Comment extends BaseEntity {
     @Setter
     private Date date;
     @Setter
-    private Long LikeCount = 0L;
+    private Long likeCount = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "memberId")
     private Member member;
 
     // 어느 게시글에서 쓴 건지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "boardId")
     private Board board;
+
+    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ContentLike> contentLikes;
 
     public Comment(String text, Date date, Member member, Board board) {
         this.text = text;
@@ -39,6 +43,6 @@ public class Comment extends BaseEntity {
     }
 
     public static Comment addComment(AddAndUpdateCommentDto addCommentDto, Member member, Board board) {
-        return new Comment(addCommentDto.getText(), addCommentDto.getDate(), member, board);
+        return new Comment(addCommentDto.getText(), new Date(), member, board);
     }
 }

@@ -1,6 +1,7 @@
 package study.counsel.interceptor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,7 +12,7 @@ import javax.servlet.http.HttpSession;
 public class LoginCheckInterceptor implements HandlerInterceptor {
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(HttpServletRequest request, @NotNull HttpServletResponse response, @NotNull Object handler) throws Exception {
 
         String requestURI = request.getRequestURI();
 
@@ -23,7 +24,9 @@ public class LoginCheckInterceptor implements HandlerInterceptor {
             log.info("미인증 사용자 요청");
             log.info("{}", handler);
 
-            throw new IllegalStateException("사용자 정보 없음");
+            // 세션 만료되면 로그아웃시킴
+            response.sendRedirect("/members/logout");
+            return false;
         }
         return true;
     }

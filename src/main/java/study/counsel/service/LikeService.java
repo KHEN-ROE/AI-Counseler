@@ -7,11 +7,11 @@ import study.counsel.dto.like.AddLikeDto;
 import study.counsel.dto.like.LikeDeleteDto;
 import study.counsel.entity.Board;
 import study.counsel.entity.Comment;
-import study.counsel.entity.Like;
+import study.counsel.entity.ContentLike;
 import study.counsel.entity.Member;
 import study.counsel.repository.BoardRepository;
 import study.counsel.repository.CommentRepository;
-import study.counsel.repository.LikeRepository;
+import study.counsel.repository.ContentLikeRepository;
 import study.counsel.repository.MemberRepository;
 
 import java.util.Optional;
@@ -21,7 +21,7 @@ import java.util.Optional;
 @Transactional
 public class LikeService {
 
-    private final LikeRepository likeRepository;
+    private final ContentLikeRepository contentLikeRepository;
 
     private final MemberRepository memberRepository;
 
@@ -40,7 +40,7 @@ public class LikeService {
         Long memberId = findMember.getId();
 
 
-        Optional<Like> findLike = likeRepository.findByMemberIdAndCommentId(memberId, addLikeDto.getCommentId());
+        Optional<ContentLike> findLike = contentLikeRepository.findByMemberIdAndCommentId(memberId, addLikeDto.getCommentId());
 
         if (findLike.isPresent()) {
             throw new IllegalStateException("좋아요는 한 번만 가능");
@@ -52,8 +52,8 @@ public class LikeService {
         Comment comment = commentRepository.findById(addLikeDto.getCommentId())
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 댓글"));
 
-        Like like = Like.addLike(findMember, board, comment);
-        likeRepository.save(like);
+        ContentLike contentLike = ContentLike.addLike(findMember, board, comment);
+        contentLikeRepository.save(contentLike);
 
         comment.setLikeCount(comment.getLikeCount() + 1);
         commentRepository.save(comment);

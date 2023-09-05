@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>게시글 상세보기</title>
+  <link rel="stylesheet" th:href="@{/boardDetail.css}" />
+</head>
+<body>
+
+<!-- Navbar -->
+<div class="navbar">
+  <div class="navbar-brand"><a href="/main" class="title">감정 쓰레기통</a></div>
+  <div class="navbar-menu">
+    <a href="/board/view">커뮤니티</a>
+    <a href="#">마이페이지</a>
+    <a href="/members/logout">로그아웃</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="board-detail">
+    <h3 th:if="${board.title != null}" th:text="${board.title}">제목</h3>
+    <p><span th:text="${board.nickname}">작성자</span> &nbsp; <span th:text="${board.date}">작성일</span></p>
+    <div class="board-content">
+      <p th:text="${board.text}">게시글 내용</p>
+    </div>
+  </div>
+
+
+  <a th:href="@{'/board/update/' + ${board.id}}"><button>수정</button></a>
+
+  <form th:action="@{'/board/delete/' + ${board.id}}" method="post">
+    <button type="submit" class="delete_Btn">삭제</button>
+  </form>
+
+
+
+  <div class="comments-section">
+    <ul>
+      <li th:each="comment : ${comments}">
+        <p><strong th:text="${comment.nickname}">작성자</strong> &nbsp; <span th:text="${comment.date}"></span> </p>
+        <p th:text="${comment.text}">댓글 내용</p>
+      </li>
+    </ul>
+
+    <form class="replyArea" action="/comment/add" method="post" th:object="${addAndUpdateCommentDto}">
+      <div>
+        <label for="text"></label>
+        <textarea id="text" name="text" th:field="*{text}" required></textarea>
+      </div>
+      <!--숨겨진 input필드로 boardId추가-->
+      <input type="hidden" name="boardId" th:value="${board.id}" />
+
+      <button type="submit">댓글 쓰기</button>
+
+    </form>
+  </div>
+
+  <div th:if="${errorMessage != null}">
+    <p th:text="${errorMessage}"></p>
+  </div>
+
+</div>
+
+</body>
+</html>

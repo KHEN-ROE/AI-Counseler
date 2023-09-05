@@ -22,7 +22,7 @@ public class BoardDetailDto {
     private String text;
 
     @NotNull
-    private String userId;
+    private String nickname;
 
     @NotNull
     private Date date;

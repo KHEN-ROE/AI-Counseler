@@ -3,9 +3,7 @@ package study.counsel.dto.board;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import javax.validation.constraints.NotNull;
-import java.util.Date;
 
 @Data
 @AllArgsConstructor
@@ -17,12 +15,5 @@ public class AddBoardDto {
 
     @NotNull(message = "내용은 필수 값")
     private String text;
-
-    @NotNull(message = "id는 필수 값")
-    private String memberId;
-
-    @NotNull
-    private Date date;
-
 
 }

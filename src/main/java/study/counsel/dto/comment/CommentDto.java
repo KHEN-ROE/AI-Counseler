@@ -24,7 +24,7 @@ public class CommentDto {
 
     // 작성자
     @NotNull
-    private String MemberId;
+    private String nickname;
 
     @NotNull
     private Long boardId;

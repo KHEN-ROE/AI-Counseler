@@ -22,4 +22,7 @@ public class BoardListDto {
     @NotNull
     private Date date;
 
+    @NotNull
+    private boolean isDeleted;
+
 }

@@ -12,13 +12,13 @@ import javax.persistence.*;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Like extends BaseEntity {
+public class ContentLike extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Like;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userId")
+    @JoinColumn(name = "memberId")
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,13 +29,13 @@ public class Like extends BaseEntity {
     @JoinColumn(name = "commentId")
     private Comment comment;
 
-    public Like(Member member, Board board, Comment comment) {
+    public ContentLike(Member member, Board board, Comment comment) {
         this.member = member;
         this.board = board;
         this.comment = comment;
     }
 
-    public static Like addLike(Member member, Board board, Comment comment) {
-        return new Like(member, board, comment);
+    public static ContentLike addLike(Member member, Board board, Comment comment) {
+        return new ContentLike(member, board, comment);
     }
 }

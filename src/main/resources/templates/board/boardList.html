@@ -20,6 +20,11 @@
 <div class="container">
     <h2>자유 게시판</h2>
 
+    <!-- 글쓰기 버튼 추가 -->
+    <div class="write-button">
+        <a href="/board/add" class="btn">글쓰기</a>
+    </div>
+
     <table>
         <thead>
         <tr>
@@ -30,9 +35,9 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="board : ${list}">
+        <tr th:each="board : ${list}" th:if="${!board.isDeleted()}">
             <td th:text="${board.id}"></td>
-            <td><a th:href="@{'/board/details/' + ${board.id}}" th:text="${board.title}"></a></td>
+            <td><a th:href="@{'/board/view/' + ${board.id}}" th:text="${board.title}"></a></td>
             <td th:text="${board.memberId}"></td>
             <td th:text="${board.date}"></td>
         </tr>
@@ -40,10 +45,11 @@
     </table>
 
     <!-- 페이지네이션 -->
-    <div class="pagination">
+    <div th:if="${list != null}" class="pagination">
         <ul>
             <li th:each="pageNumber : ${#numbers.sequence(1, list.totalPages)}">
-                <a th:href="@{/view?page=${pageNumber}&size=10}" th:text="${pageNumber}"></a>
+                <a th:href="@{/board/view(page=${pageNumber - 1}, size=10)}" th:text="${pageNumber}"></a>
+
             </li>
         </ul>
     </div>
