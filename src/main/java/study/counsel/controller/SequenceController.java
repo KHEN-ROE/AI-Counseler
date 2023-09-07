@@ -24,7 +24,7 @@ public class SequenceController {
         HttpSession session = request.getSession();
         session.setAttribute("chatSequenceNumber", chatSequenceNumber);
 
-        return "chatView";
+        return "/chat/chatView";
     }
 
     @PostMapping("/increaseSeqAndShowMain")

@@ -70,7 +70,7 @@ h2 {
 
 a, form:not(.comment-button-form) {
     display: inline-block;
-    margin-top: 5%;
+    /*margin-top: 5%;*/
 }
 
 /* 수정, 삭제 버튼 스타일 */
@@ -194,3 +194,31 @@ button[type="submit"]:not(.delete_Btn, .deleteComment):hover {
     color: #000000;
 }
 
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+.dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown, .dropdown-content, .navbar-menu a {
+    vertical-align: middle; /* 모든 메뉴 아이템이 동일한 수직 위치에 있도록 조정 */
+}

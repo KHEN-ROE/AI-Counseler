@@ -54,7 +54,7 @@ public class ChatGPTController {
         model.addAttribute("counselList", counselList);
         model.addAttribute("conversationList", conversationList);
 
-        return "chatView";
+        return "/chat/chatView";
     }
 
     @GetMapping("/completion/chat")
@@ -66,7 +66,7 @@ public class ChatGPTController {
 
         model.addAttribute("counselList", counselList);
 
-        return "chatView";
+        return "/chat/chatView";
     }
 
     @GetMapping("/completion/chat/{chatSequenceNumberId}")
@@ -82,7 +82,7 @@ public class ChatGPTController {
         model.addAttribute("counselList", counselList);
         model.addAttribute("conversationList", conversationList);
 
-        return "chatViewHistory";
+        return "/chat/chatViewHistory";
     }
 
     // 과거 대화에서 다시 채팅
@@ -105,7 +105,7 @@ public class ChatGPTController {
         model.addAttribute("conversationList", conversationList);
         model.addAttribute("chatSequenceNumberId", chatSequenceNumberId);
 
-        return "chatViewHistory";
+        return "/chat/chatViewHistory";
 
     }
     

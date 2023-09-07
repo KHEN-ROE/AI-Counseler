@@ -1,14 +1,17 @@
 package study.counsel.dto.member;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
 @Data
-public class MemberFormDto {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UpdateMemberFormDto {
 
-    @NotBlank(message = "아이디를 입력해주세요")
     private String memberId;
 
     @NotBlank(message = "비밀번호를 입력해주세요")

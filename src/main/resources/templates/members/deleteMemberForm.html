@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" th:href="@{/confirmPasswordForm.css}"/>
+    <title>회원 탈퇴</title>
+</head>
+<body>
+<div class="container">
+    <h3>비밀번호를 입력하세요.</h3>
+
+    <!-- 에러 메시지 출력 영역 -->
+    <p th:if="${errorMessage}" class="error" th:text="${errorMessage}"></p>
+
+    <!-- 비밀번호 입력 폼 -->
+    <form action="/members/delete" method="post">
+        <div class="form-group">
+            <label for="password">비밀번호</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+
+        <!-- 폼 전송 버튼 -->
+        <button type="submit">확인</button>
+    </form>
+</div>
+</body>
+</html>

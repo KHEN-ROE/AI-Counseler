@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원 정보 수정</title>
+    <link rel="stylesheet" th:href="@{/memberUpdateForm.css}" />
+</head>
+<body>
+
+<h1>회원 정보 수정</h1>
+
+<form action="/members/update" method="post" th:object="${updateMemberFormDto}">
+
+    <div>
+        <label for="memberId">ID</label>
+        <input type="text" id="memberId" name="memberId" th:field="*{memberId}" th:value="*{memberId}" th:placeholder="${memberId}" readonly>
+        <span th:if="${#fields.hasErrors('memberId')}" th:errors="*{memberId}">ID 오류</span>
+    </div>
+
+    <div>
+        <label for="password">비밀번호</label>
+        <input type="password" id="password" th:field="*{password}">
+        <span th:if="${#fields.hasErrors('password')}" th:errors="*{password}">비밀번호 오류</span>
+    </div>
+
+    <div>
+        <label for="nickname">닉네임</label>
+        <input type="text" id="nickname" th:field="*{nickname}">
+        <span th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}">닉네임 오류</span>
+    </div>
+
+    <div>
+        <label for="username">이름</label>
+        <input type="text" id="username" th:field="*{username}">
+        <span th:if="${#fields.hasErrors('username')}" th:errors="*{username}">사용자 이름 오류</span>
+    </div>
+
+    <div>
+        <label for="email">이메일</label>
+        <input type="email" id="email" th:field="*{email}">
+        <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}">이메일 오류</span>
+    </div>
+
+    <div>
+        <input type="submit" value="수정하기">
+    </div>
+</form>
+
+<p th:if="${errorMessage}" th:text="${errorMessage}">에러 메시지</p>
+
+</body>
+</html>

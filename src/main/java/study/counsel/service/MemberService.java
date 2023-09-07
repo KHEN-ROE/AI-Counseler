@@ -5,10 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import study.counsel.config.PasswordEncrypter;
-import study.counsel.dto.member.ConfirmPasswordDto;
-import study.counsel.dto.member.DeleteMemberDto;
-import study.counsel.dto.member.LoginDto;
-import study.counsel.dto.member.MemberFormDto;
+import study.counsel.dto.member.*;
 import study.counsel.entity.Member;
 import study.counsel.exception.MemberAlreadyExistsException;
 import study.counsel.repository.MemberRepository;
@@ -50,7 +47,6 @@ public class MemberService {
                         }
                 );
 
-
         // 비밀번호 암호화
         String encryptedPassword = passwordEncrypter.encrypt(memberFormDto.getPassword());
 
@@ -59,21 +55,39 @@ public class MemberService {
         memberRepository.save(member);
     }
 
-    public void updateMember(MemberFormDto memberFormDto) {
+    public void updateMember(UpdateMemberFormDto memberFormDto, HttpServletRequest request) {
 
-        Member member = memberRepository.findByMemberId(memberFormDto.getMemberId())
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
+        Member member = memberRepository.findByMemberId(loginMember)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 회원"));
 
-        member.setPassword(memberFormDto.getPassword());
+        memberRepository.findByNickname(memberFormDto.getNickname()).ifPresent(m -> {
+            if (!m.getMemberId().equals(member.getMemberId())) { // db에 있는 id와, 현재 로그인한 회원의 id가 같은지 체크
+                throw new IllegalStateException("이미 존재하는 닉네임");
+            }
+        });
+
+        memberRepository.findByEmail(memberFormDto.getEmail()).ifPresent(m -> {
+            if (!m.getMemberId().equals(member.getMemberId())) {
+                throw new IllegalStateException("이미 존재하는 이메일");
+            }
+        });
+
+        String encryptedPassword = passwordEncrypter.encrypt(memberFormDto.getPassword());
+
+        member.setPassword(encryptedPassword);
         member.setNickname(memberFormDto.getNickname());
         member.setUsername(memberFormDto.getUsername());
         member.setEmail(memberFormDto.getEmail());
 
     }
 
-    public void confirmPassword(ConfirmPasswordDto confirmPasswordDto) {
+    public void confirmPassword(ConfirmPasswordDto confirmPasswordDto, HttpServletRequest request) {
 
-        Member findMember = memberRepository.findByMemberId(confirmPasswordDto.getMemberId())
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
+        Member findMember = memberRepository.findByMemberId(loginMember)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 회원"));
 
         String encryptedPassword = passwordEncrypter.encrypt(confirmPasswordDto.getPassword());
@@ -87,9 +101,11 @@ public class MemberService {
         }
     }
 
-    public void deleteMember(DeleteMemberDto deleteMemberDto) {
+    public void deleteMember(DeleteMemberDto deleteMemberDto, HttpServletRequest request) {
 
-        Member findMember = memberRepository.findByMemberId(deleteMemberDto.getMemberId())
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
+        Member findMember = memberRepository.findByMemberId(loginMember)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 사용자"));
 
         String encryptedPwd = passwordEncrypter.encrypt(deleteMemberDto.getPassword());

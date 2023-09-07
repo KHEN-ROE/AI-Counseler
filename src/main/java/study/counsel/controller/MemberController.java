@@ -8,10 +8,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import study.counsel.dto.member.ConfirmPasswordDto;
-import study.counsel.dto.member.DeleteMemberDto;
-import study.counsel.dto.member.LoginDto;
-import study.counsel.dto.member.MemberFormDto;
+import retrofit2.http.HTTP;
+import study.counsel.dto.member.*;
 import study.counsel.exception.MemberAlreadyExistsException;
 import study.counsel.service.MemberService;
 
@@ -56,8 +54,13 @@ public class MemberController {
         return "redirect:/members/join"; // redirect는 url로 이동시킴. return "템플릿명"은 뷰를 리턴
     }
 
-    @PostMapping("confirm")
-    public String confirmPassword(@ModelAttribute("confirmPwd") @Validated ConfirmPasswordDto confirmPasswordDto, BindingResult bindingResult, Model model) {
+    @GetMapping("/confirm")
+    public String confirmPasswordForm() {
+        return "members/confirmPasswordForm";
+    }
+
+    @PostMapping("/confirm")
+    public String confirmPassword(@Validated ConfirmPasswordDto confirmPasswordDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
 
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());
@@ -65,21 +68,30 @@ public class MemberController {
         }
 
         try {
-            memberservice.confirmPassword(confirmPasswordDto);
+            memberservice.confirmPassword(confirmPasswordDto, request);
 
         } catch (Exception e) {
             log.info("error={}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
+            return "members/confirmPasswordForm";
         }
 
-        return "member/updateMemberForm";
+        return "redirect:/members/update";
+    }
 
+    @GetMapping("/update")
+    public String updateMemberForm(Model model, HttpServletRequest request) {
+
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+        model.addAttribute("memberId", loginMember);
+        model.addAttribute(new UpdateMemberFormDto());
+        return "/members/memberUpdateForm";
     }
 
     // "updateMember"는 @ModelAttribute의 속성으로, 이 이름을 사용하여 뷰에서 해당 데이터에 접근 가능
     // model.addAttribute("key", value) 에서 key에 해당
     @PostMapping("/update")
-    public String updateMember(@Validated MemberFormDto memberFormDto, BindingResult bindingResult, Model model) {
+    public String updateMember(@Validated UpdateMemberFormDto memberFormDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
 
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());
@@ -87,7 +99,9 @@ public class MemberController {
         }
 
         try {
-            memberservice.updateMember(memberFormDto);
+            memberservice.updateMember(memberFormDto, request);
+            model.addAttribute("memberId");
+            return "redirect:/members/logout";
         } catch (Exception e) {
             log.info("error={}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
@@ -95,8 +109,13 @@ public class MemberController {
         return "redirect:/";
     }
 
+    @GetMapping("/delete")
+    public String deleteMemberForm() {
+        return "members/deleteMemberForm";
+    }
+
     @PostMapping("/delete")
-    public String deleteMember(@Validated DeleteMemberDto deleteMemberDto, BindingResult bindingResult, Model model) {
+    public String deleteMember(@Validated DeleteMemberDto deleteMemberDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
 
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());
@@ -104,7 +123,7 @@ public class MemberController {
         }
 
         try {
-            memberservice.deleteMember(deleteMemberDto);
+            memberservice.deleteMember(deleteMemberDto, request);
         } catch (Exception e) {
             log.info("error={}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
