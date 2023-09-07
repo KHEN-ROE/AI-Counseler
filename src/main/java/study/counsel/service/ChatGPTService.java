@@ -65,11 +65,11 @@ public class ChatGPTService {
         // 따라서 사용자 별 세션을 이용하여 구분해야 함
         // Map에 사용자의 식별자, 대화기록을 넣는다.
 
-        Member findMember = memberRepository.findByMemberId(request.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
+        Member findMember = getMemberByRequestId(request);
 
         HttpSession session = httpServletRequest.getSession();
-        // 맵의 key로 사용
         String sessionId = session.getId();
+
         ChatSequenceNumber chatSequenceNumber = (ChatSequenceNumber) session.getAttribute("chatSequenceNumber");
 
         if (sessionId == null) {
@@ -91,49 +91,14 @@ public class ChatGPTService {
             registerPrompt(request, conversationList);
         }
 
-        // 리스트에 사용자의 요청 저장
-        conversationList.add(new ChatMessage(request.getRole(), request.getMessage()));
+        // api요청, 대화 저장 및 삭제
+        List<String> messages = requestChatAndDelete(request, httpServletRequest, sessionId, conversationList);
 
-        log.info("대화 내역={}", conversationList);
-
-        // 업데이트된 대화 내용을 다시 저장
-        conversationHistory.put(sessionId, conversationList);
-
-        log.info("Map에 있는 내용={}", conversationHistory);
-
-        // open AI 서버에 요청 전송
-        ChatCompletionResult chatCompletion = openAiService.createChatCompletion(GPTCompletionChatRequest.of(request, conversationHistory, httpServletRequest));
-
-        GPTCompletionChatResponse response = GPTCompletionChatResponse.of(chatCompletion);
-
-        // message만 추출
-        List<String> messages = response.getMessages().stream()
-                .map(GPTCompletionChatResponse.Message::getMessage)
-                .collect(Collectors.toList());
-
-        // usage 추출(총 토큰 개수)
-        GPTCompletionChatResponse.Usage usage = response.getUsage();
-        Long totalTokens = usage.getTotalTokens();
-
-        // 토큰 개수 초과 시 3, 4, 5 번째 대화 삭제
-        if (totalTokens >= 3000) {
-            for (int i = 0; i < 3 && conversationList.size() > 2; i++) {
-                conversationList.remove(2);
-            }
-        }
-
-        log.info("삭제 후 토큰 수={}", totalTokens);
-
-        String responseMessage = "";
-        for (String message : messages) {
-            responseMessage = message;
-        }
+        // 응답 추출
+        String responseMessage = getResponseMessage(messages);
 
         // ai의 답변 또한 리스트에 저장한다.
-        conversationList.add(new ChatMessage("assistant", responseMessage));
-
-        // List를 String 으로 변환
-        String answerMsg = getAnswerToString(messages);
+        String answerMsg = saveResponseToListAndConvertListToString(conversationList, messages, responseMessage);
 
         // 상담 내역 리스트에 표시될 제목은 8자로 자름
         String title = getTitle(request);
@@ -145,6 +110,14 @@ public class ChatGPTService {
         counselHistoryRepository.save(counselHistory);
 
         return counselHistoryRepository.findByChatSequenceNumber(chatSequenceNumber);
+    }
+
+    @NotNull
+    private static String saveResponseToListAndConvertListToString(List<ChatMessage> conversationList, List<String> messages, String responseMessage) {
+        conversationList.add(new ChatMessage("assistant", responseMessage));
+
+        // List를 String 으로 변환
+        return getAnswerToString(messages);
     }
 
     private void registerPrompt(GPTCompletionChatRequest request, List<ChatMessage> conversationList) {
@@ -194,8 +167,6 @@ public class ChatGPTService {
 
         List<CounselHistory> rawList = counselHistoryRepository.findByMemberId(id);
 
-        log.info("rawList={}", rawList);
-
         //식별자 기준으로 중복 제거
         return rawList.stream()
                 .filter(distinctByKey(CounselHistory::getChatSequenceNumber))
@@ -226,11 +197,9 @@ public class ChatGPTService {
         // 5. 응답을 받아서 리스트에 저장한다.
         // 6. db에 저장하고 식별자로 구분하여 리스트 리턴
 
-        Member findMember = memberRepository.findByMemberId(request.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
+        Member findMember = getMemberByRequestId(request);
 
-        HttpSession session = httpServletRequest.getSession();
-        // 맵의 key로 사용
-        String sessionId = session.getId();
+        String sessionId = getSessionId(httpServletRequest);
 
         ChatSequenceNumber findSeq = chatSequenceNumberRepository.findById(chatSequenceNumberId)
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 대화내역"));
@@ -239,14 +208,12 @@ public class ChatGPTService {
 
         String counselMode = "";
 
-        //위 리스트에서 몇 가지를 추출해야함(1.counselMode, 2.질문, 3.답변
+        //위 리스트에서 몇 가지를 추출해야함(1.counselMode, 2.질문, 3.답변)
         for (CounselHistory counselHistory : findCounselList) {
             if (!counselHistory.getCounselMode().equals("")) {
                 counselMode = counselHistory.getCounselMode();
             }
         }
-
-        log.info("counselMode={}", counselMode);
 
         // 기존의 대화 내역은 삭제(채팅을 하다가 과거 채팅 내역으로 가서 다시 채팅 이어가는 경우)
         List<ChatMessage> conversationList = conversationHistory.get(sessionId);
@@ -257,16 +224,11 @@ public class ChatGPTService {
             registerPrompt(counselMode, conversationList);
         }
 
-        log.info("기존 대화 삭제 여부={}", conversationList);
-
         // 시스템에 역할 부여
         if (conversationList == null) {
             conversationList = new ArrayList<>();
             registerPrompt(counselMode, conversationList);
         }
-
-        log.info("역할 부여 여부={}", conversationList);
-        
 
         // 리스트에 과거 대화 내역 저장
         for (CounselHistory counselHistory : findCounselList) {
@@ -274,14 +236,38 @@ public class ChatGPTService {
             conversationList.add(new ChatMessage("assistant", counselHistory.getAnswer()));
         }
 
-        log.info("과거 대화 내역 저장 여부={}", conversationList);
-
         // 사용자의 새로운 메시지 저장
+        List<String> messages = requestChatAndDelete(request, httpServletRequest, sessionId, conversationList);
+
+        String responseMessage = getResponseMessage(messages);
+
+        // ai의 답변 또한 리스트에 저장한다.
+        String answerMsg = saveResponseToListAndConvertListToString(conversationList, messages, responseMessage);
+
+        // 상담 내역 리스트에 표시될 제목은 8자로 자름
+        String title = getTitle(request);
+
+        CounselHistory counselHistory = new CounselHistory(title, request.getMessage(), answerMsg, findMember, findSeq, counselMode);
+
+        counselHistoryRepository.save(counselHistory);
+
+        return counselHistoryRepository.findByChatSequenceNumber(findSeq);
+
+    }
+
+    private static String getResponseMessage(List<String> messages) {
+        String responseMessage = "";
+        for (String message : messages) {
+            responseMessage = message;
+        }
+        return responseMessage;
+    }
+
+    @NotNull
+    private List<String> requestChatAndDelete(GPTCompletionChatRequest request, HttpServletRequest httpServletRequest, String sessionId, List<ChatMessage> conversationList) {
         conversationList.add(new ChatMessage(request.getRole(), request.getMessage()));
 
         conversationHistory.put(sessionId, conversationList);
-
-        log.info("Map에 있는 내용={}", conversationHistory);
 
         // open AI 서버에 요청 전송
         ChatCompletionResult chatCompletion = openAiService.createChatCompletion(GPTCompletionChatRequest.of(request, conversationHistory, httpServletRequest));
@@ -303,26 +289,15 @@ public class ChatGPTService {
                 conversationList.remove(2);
             }
         }
+        return messages;
+    }
 
-        String responseMessage = "";
-        for (String message : messages) {
-            responseMessage = message;
-        }
+    private static String getSessionId(HttpServletRequest httpServletRequest) {
+        HttpSession session = httpServletRequest.getSession();
+        return session.getId();
+    }
 
-        // ai의 답변 또한 리스트에 저장한다.
-        conversationList.add(new ChatMessage("assistant", responseMessage));
-
-        // List를 String 으로 변환
-        String answerMsg = getAnswerToString(messages);
-
-        // 상담 내역 리스트에 표시될 제목은 8자로 자름
-        String title = getTitle(request);
-
-        CounselHistory counselHistory = new CounselHistory(title, request.getMessage(), answerMsg, findMember, findSeq, counselMode);
-
-        counselHistoryRepository.save(counselHistory);
-
-        return counselHistoryRepository.findByChatSequenceNumber(findSeq);
-
+    private Member getMemberByRequestId(GPTCompletionChatRequest request) {
+        return memberRepository.findByMemberId(request.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
     }
 }

@@ -79,7 +79,7 @@ public class MemberController {
     // "updateMember"는 @ModelAttribute의 속성으로, 이 이름을 사용하여 뷰에서 해당 데이터에 접근 가능
     // model.addAttribute("key", value) 에서 key에 해당
     @PostMapping("/update")
-    public String updateMember(@ModelAttribute("updateMember") @Validated MemberFormDto memberFormDto, BindingResult bindingResult, Model model) {
+    public String updateMember(@Validated MemberFormDto memberFormDto, BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());
@@ -96,7 +96,7 @@ public class MemberController {
     }
 
     @PostMapping("/delete")
-    public String deleteMember(@ModelAttribute("deleteMember") @Validated DeleteMemberDto deleteMemberDto, BindingResult bindingResult, Model model) {
+    public String deleteMember(@Validated DeleteMemberDto deleteMemberDto, BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());
