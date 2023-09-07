@@ -45,9 +45,12 @@ public class BoardController {
     }
 
     @GetMapping("/view/{id}")
-    public String getBoard(@PathVariable Long id, Model model) {
+    public String getBoard(@PathVariable Long id, Model model, HttpServletRequest request) {
         log.info("글 번호 : " + id);
         try {
+            String loginMember = (String) request.getSession().getAttribute("loginMember");
+            log.info("loginMember={}",loginMember);
+            model.addAttribute("loginMember", loginMember);
             BoardDetailDto board = boardService.getBoard(id);
             model.addAttribute("board", board);
 

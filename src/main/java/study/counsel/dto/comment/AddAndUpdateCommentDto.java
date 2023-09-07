@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 public class AddAndUpdateCommentDto {
 
     @NotNull
-    private String MemberId;
+    private Long commentId;
 
     @NotNull
     private String text;

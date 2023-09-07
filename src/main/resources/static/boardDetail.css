@@ -68,13 +68,13 @@ h2 {
     color: #555;
 }
 
-a, form {
+a, form:not(.comment-button-form) {
     display: inline-block;
     margin-top: 5%;
 }
 
 /* 수정, 삭제 버튼 스타일 */
-a button, .delete_Btn {
+a button, .delete_Btn{
     cursor: pointer;
     padding: 10px 20px;
     margin-right: 10px;
@@ -83,6 +83,33 @@ a button, .delete_Btn {
     background-color: #2980b9;
     color: #fff;
     transition: background-color 0.3s;
+}
+
+.editComment, .deleteComment {
+    background-color: white; /* 버튼의 배경 색상 */
+    color: black; /* 글자 색상 */
+    border: none; /* 테두리 없애기 */
+    padding: 10px 15px; /* 버튼 안쪽 여백 */
+    text-align: center; /* 텍스트 중앙 정렬 */
+    text-decoration: none; /* 텍스트 밑줄 없애기 */
+    display: inline-block; /* 인라인-블록으로 설정 */
+    font-size: 13px; /* 글자 크기 */
+    margin: 4px 2px; /* 버튼 외곽 여백 */
+    cursor: pointer; /* 마우스 커서를 손 모양으로 변경 */
+    border-radius: 12px; /* 버튼 모서리 둥글게 */
+}
+
+.comment-button-form {
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    vertical-align: top;
+}
+
+.comment-content-wrapper {
+    display: flex;
+    align-items: center; /* 가로축 중앙 정렬로 요소들을 세로 중앙에 위치시킴. */
+    justify-content: space-between; /* 댓글 내용과 버튼 사이에 최대한의 공간을 만듦. */
 }
 
 .delete_Btn {
@@ -115,7 +142,7 @@ textarea#text {
 }
 
 /* '댓글 쓰기' 버튼 스타일 */
-button[type="submit"]:not(.delete_Btn) {
+button[type="submit"]:not(.delete_Btn, .deleteComment) {
     display: block;
     margin-top: 15px;
     padding: 10px 15px;
@@ -127,7 +154,7 @@ button[type="submit"]:not(.delete_Btn) {
     transition: background-color 0.3s;
 }
 
-button[type="submit"]:not(.delete_Btn):hover {
+button[type="submit"]:not(.delete_Btn, .deleteComment):hover {
     background-color: #2980b9;
 }
 

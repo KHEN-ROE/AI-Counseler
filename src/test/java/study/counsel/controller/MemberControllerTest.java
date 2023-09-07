@@ -3,6 +3,7 @@ package study.counsel.controller;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import study.counsel.config.PasswordEncrypter;
 import study.counsel.dto.member.DeleteMemberDto;
@@ -16,7 +17,6 @@ import study.counsel.service.MemberService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-//@WebMvcTest(MemberController.class)
 @SpringBootTest
 @Transactional
 class MemberControllerTest {
@@ -122,9 +122,9 @@ class MemberControllerTest {
     public MemberFormDto createForm() {
         MemberFormDto memberFormDto = new MemberFormDto();
         memberFormDto.setMemberId("test");
+        memberFormDto.setPassword("test");
         memberFormDto.setUsername("test");
         memberFormDto.setNickname("test");
-        memberFormDto.setPassword("test");
         memberFormDto.setEmail("aaa@aaa.aaa");
 
         return memberFormDto;

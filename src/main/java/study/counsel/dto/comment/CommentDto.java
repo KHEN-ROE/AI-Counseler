@@ -27,6 +27,12 @@ public class CommentDto {
     private String nickname;
 
     @NotNull
+    private String memberId;
+
+    @NotNull
     private Long boardId;
+
+    @NotNull
+    private boolean isDeleted;
 
 }

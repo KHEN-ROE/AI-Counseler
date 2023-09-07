@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import study.counsel.dto.board.*;
 import study.counsel.dto.comment.CommentDto;
 import study.counsel.entity.Board;
+import study.counsel.entity.Comment;
 import study.counsel.entity.Member;
 import study.counsel.repository.BoardRepository;
 import study.counsel.repository.MemberRepository;

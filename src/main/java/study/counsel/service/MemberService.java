@@ -43,6 +43,14 @@ public class MemberService {
                         }
                 );
 
+        memberRepository.findByNickname(memberFormDto.getNickname())
+                .ifPresent(member ->
+                        {
+                            throw new MemberAlreadyExistsException("이미 존재하는 별명");
+                        }
+                );
+
+
         // 비밀번호 암호화
         String encryptedPassword = passwordEncrypter.encrypt(memberFormDto.getPassword());
 

@@ -134,6 +134,7 @@ public class MemberController {
         } catch (Exception e) {
             log.info("error={}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
+            return "members/loginForm";
         }
 
         return "redirect:/main";

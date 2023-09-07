@@ -35,12 +35,44 @@
   </form>
 
 
-
   <div class="comments-section">
     <ul>
-      <li th:each="comment : ${comments}">
-        <p><strong th:text="${comment.nickname}">작성자</strong> &nbsp; <span th:text="${comment.date}"></span> </p>
-        <p th:text="${comment.text}">댓글 내용</p>
+      <li th:each="comment : ${comments}" th:if="${comment.isDeleted == false}">
+        <p><strong th:text="${comment.nickname}">작성자</strong> &nbsp; <span th:text="${comment.date}"></span></p>
+
+        <div class="comment-content-wrapper">
+          <p th:text="${comment.text}" style="flex-grow: 1;">댓글 내용</p>
+          <div>
+
+            <!-- 좋아요 아이콘 및 숫자 -->
+
+              <span class="like-icon" th:data-id="${comment.id}" th:data-board-id="${board.id}" onclick="addLike(this)">👍</span>
+              <span class="like-count" th:text="${comment.likeCount}">0</span>
+
+
+            <div th:if="${comment.memberId.equals(loginMember)}">
+              <button class="editComment" th:data-id="${comment.id}" style="display: inline-block;">수정</button>
+
+              <form th:action="@{'/comment/delete'}" method="post" class="comment-button-form" style="display: inline-block;">
+                <input type="hidden" name="commentId" th:value="${comment.id}">
+                <input type="hidden" name="boardId" th:value="${board.id}">
+                <button class="deleteComment" type="submit">삭제</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- 댓글 수정 폼 -->
+        <div class="edit-comment-form" th:id="'editForm-' + ${comment.id}" style="display:none;">
+          <form action="/comment/update" method="post">
+            <label>
+              <textarea name="text" required th:text="${comment.text}"></textarea>
+            </label>
+            <input type="hidden" name="commentId" th:value="${comment.id}"/>
+            <input type="hidden" name="boardId" th:value="${board.id}"/>
+            <button type="submit">수정 완료</button>
+          </form>
+        </div>
       </li>
     </ul>
 
@@ -63,5 +95,57 @@
 
 </div>
 
+<script>
+  const editButtons = document.querySelectorAll('.editComment');
+
+  editButtons.forEach(button => {
+    button.addEventListener('click', function () {
+      const commentId = this.dataset.id;
+      console.log("commentId", commentId);
+      const editForm = document.getElementById('editForm-' + commentId);
+      console.log("editForm:", document.getElementById('editForm-' + commentId));
+      editForm.style.display = 'block';
+    });
+  });
+</script>
+
+<!-- jQuery 라이브러리 추가 (Ajax 사용을 위해) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  function addLike(element) {
+    // comment id 가져오기
+    const commentId = $(element).data('id');
+    const boardId = $(element).data('board-id');
+
+    // 데이터 설정
+    const data = {
+      boardId: boardId,
+      commentId: commentId,
+    };
+
+    // Ajax 요청
+    $.post("/like/add", data, function (response) {
+      if (response.error) {
+        // 에러 처리
+        alert(response.errorMessage);
+      } else {
+        // 좋아요 카운트 업데이트
+        updateLikeCount(commentId);
+      }
+    }).fail(function () {
+      alert("좋아요는 한 번만 가능해요.");
+    });
+  }
+
+  function updateLikeCount(commentId) {
+    $.get(`/like/get/${commentId}`, function (data) {
+      $(`[data-id=${commentId}]`).next(".like-count").text(data);
+    }).fail(function () {
+      alert("좋아요 개수 가져오기에 실패했습니다.");
+    });
+  }
+
+</script>
 </body>
 </html>

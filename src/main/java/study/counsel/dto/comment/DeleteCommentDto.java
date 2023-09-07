@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 public class DeleteCommentDto {
 
     @NotNull
-    private String MemberId;
+    private Long commentId;
 
     @NotNull
     private Long boardId;

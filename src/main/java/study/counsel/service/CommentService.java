@@ -33,7 +33,7 @@ public class CommentService {
     public List<CommentDto> getComment(Long boardId) {
         List<Comment> findAll = commentRepository.findAllByBoardIdOrderByLikeCountDesc(boardId);
         return findAll.stream()
-                .map(comment -> new CommentDto(comment.getId(), comment.getText(), comment.getDate(), comment.getLikeCount(), comment.getMember().getNickname(), comment.getBoard().getId()))
+                .map(comment -> new CommentDto(comment.getId(), comment.getText(), comment.getDate(), comment.getLikeCount(), comment.getMember().getNickname(), comment.getMember().getMemberId(), comment.getBoard().getId(), comment.isDeleted()))
                 .collect(Collectors.toList());
     }
 
@@ -48,12 +48,14 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
-    public void updateComment(Long id, AddAndUpdateCommentDto updateCommentDto) {
+    public void updateComment(AddAndUpdateCommentDto updateCommentDto, HttpServletRequest request) {
+
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
 
         Board findBoard = boardRepository.findById(updateCommentDto.getBoardId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 게시글"));
-        Comment findComment = commentRepository.findById(id).orElseThrow(() -> new IllegalStateException("존재하지 않는 댓글"));
+        Comment findComment = commentRepository.findById(updateCommentDto.getCommentId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 댓글"));
 
-        if (findComment.getMember().getMemberId().equals(updateCommentDto.getMemberId())) {
+        if (findComment.getMember().getMemberId().equals(loginMember)) {
             findComment.setText(updateCommentDto.getText());
             findComment.setDate(new Date());
         } else {
@@ -62,14 +64,15 @@ public class CommentService {
 
     }
 
-    public void deleteComment(Long id, HttpServletRequest request) {
+    public void deleteComment(DeleteCommentDto deleteCommentDto, HttpServletRequest request) {
 
         String loginMember = (String) request.getSession().getAttribute("loginMember");
 
-        Comment findComment = commentRepository.findById(id).orElseThrow(() -> new IllegalStateException("존재하지 않는 댓글"));
+        Comment findComment = commentRepository.findById(deleteCommentDto.getCommentId())
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 댓글"));
 
         if (findComment.getMember().getMemberId().equals(loginMember)) {
-            commentRepository.deleteById(id);
+            findComment.setDeleted(true);
         } else {
             throw new IllegalStateException("일치하지 않는 사용자");
         }

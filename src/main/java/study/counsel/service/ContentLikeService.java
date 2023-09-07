@@ -14,12 +14,13 @@ import study.counsel.repository.CommentRepository;
 import study.counsel.repository.ContentLikeRepository;
 import study.counsel.repository.MemberRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class LikeService {
+public class ContentLikeService {
 
     private final ContentLikeRepository contentLikeRepository;
 
@@ -34,11 +35,12 @@ public class LikeService {
         return findComment.getLikeCount();
     }
 
-    public void addLike(AddLikeDto addLikeDto) {
+    public void addLike(AddLikeDto addLikeDto, HttpServletRequest request) {
 
-        Member findMember = memberRepository.findByMemberId(addLikeDto.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 회원"));
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
+        Member findMember = memberRepository.findByMemberId(loginMember).orElseThrow(() -> new IllegalStateException("존재하지 않는 회원"));
         Long memberId = findMember.getId();
-
 
         Optional<ContentLike> findLike = contentLikeRepository.findByMemberIdAndCommentId(memberId, addLikeDto.getCommentId());
 

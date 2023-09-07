@@ -16,12 +16,18 @@ public class Comment extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Setter
     private String text;
+
     @Setter
     private Date date;
+
     @Setter
     private Long likeCount = 0L;
+
+    @Setter
+    private boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memberId")

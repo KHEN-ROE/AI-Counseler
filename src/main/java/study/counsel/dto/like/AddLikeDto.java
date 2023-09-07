@@ -12,9 +12,6 @@ import javax.validation.constraints.NotNull;
 public class AddLikeDto {
 
     @NotNull
-    private String MemberId;
-
-    @NotNull
     private Long boardId;
 
     @NotNull

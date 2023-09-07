@@ -5,10 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import study.counsel.dto.board.BoardDetailDto;
 import study.counsel.dto.comment.AddAndUpdateCommentDto;
 import study.counsel.dto.comment.CommentDto;
+import study.counsel.dto.comment.DeleteCommentDto;
 import study.counsel.service.BoardService;
 import study.counsel.service.CommentService;
 
@@ -27,11 +31,15 @@ public class CommentController {
     private final BoardService boardService;
 
     @GetMapping("/get/{boardId}")
-    public String getComment(@PathVariable Long boardId, Model model) {
+    public String getComment(@PathVariable Long boardId, Model model, HttpServletRequest request) {
         log.info("글번호 : " + boardId);
+
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
         try {
             List<CommentDto> comments = commentService.getComment(boardId);
             model.addAttribute("comments", comments);
+            model.addAttribute("loginMember", loginMember);
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
         }
@@ -66,28 +74,36 @@ public class CommentController {
         return "redirect:/board/view/" + boardId;
     }
 
-    @PostMapping("/update/{id}")
-    public void updateComment(@PathVariable Long id, @Valid AddAndUpdateCommentDto updateCommentDto, BindingResult bindingResult, Model model) {
-        log.info("받은 댓글 정보 : " + id + "," + updateCommentDto);
+    @PostMapping("/update")
+    public String updateComment(@Valid AddAndUpdateCommentDto updateCommentDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
+        log.info("받은 댓글 정보={}", updateCommentDto);
 
         if (bindingResult.hasErrors()) {
-            model.addAttribute("error",bindingResult.getFieldError());
+            model.addAttribute("error", bindingResult.getFieldError());
         }
 
         try {
-            commentService.updateComment(id, updateCommentDto);
+            commentService.updateComment(updateCommentDto, request);
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
         }
+
+        Long boardId = updateCommentDto.getBoardId();
+
+        return "redirect:/board/view/" + boardId;
 
     }
 
-    @PostMapping("/delete/{id}")
-    public void deleteComment(@PathVariable Long id, HttpServletRequest request, Model model) {
+    @PostMapping("/delete")
+    public String deleteComment(@Valid DeleteCommentDto deleteCommentDto, HttpServletRequest request, Model model) {
         try {
-            commentService.deleteComment(id, request);
+            commentService.deleteComment(deleteCommentDto, request);
         } catch (Exception e) {
             model.addAttribute("errorMessage", e.getMessage());
         }
+
+        Long boardId = deleteCommentDto.getBoardId();
+
+        return "redirect:/board/view/" + boardId;
     }
 }
