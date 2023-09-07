@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface ContentLikeRepository extends JpaRepository<ContentLike, Long> {
 
     Optional<ContentLike> findByMemberIdAndCommentId(Long memberId, Long commentId);
+
+    Optional<ContentLike> findByMemberIdAndBoardId(Long memberId, Long boardId);
 }

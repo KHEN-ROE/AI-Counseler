@@ -251,7 +251,7 @@ public class ChatGPTService {
         // 기존의 대화 내역은 삭제(채팅을 하다가 과거 채팅 내역으로 가서 다시 채팅 이어가는 경우)
         List<ChatMessage> conversationList = conversationHistory.get(sessionId);
 
-        // 시스템에 역할 부여
+        // 시스템에 역할 부여, 대화 내역 삭제
         if (!(conversationList ==null)) {
             conversationList.clear();
             registerPrompt(counselMode, conversationList);

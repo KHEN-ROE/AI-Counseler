@@ -30,12 +30,41 @@ public class ContentLikeService {
 
     private final CommentRepository commentRepository;
 
-    public Long getLike(Long commentId) {
+    public Long getBoardLike(Long boardId) {
+        Board findBoard = boardRepository.findById(boardId).orElseThrow(() -> new IllegalStateException("존재하지 않는 게시글"));
+        return findBoard.getLikeCount();
+    }
+
+    public Long getCommentLike(Long commentId) {
         Comment findComment = commentRepository.findById(commentId).orElseThrow(() -> new IllegalStateException("존재하지 않는 댓글"));
         return findComment.getLikeCount();
     }
 
-    public void addLike(AddLikeDto addLikeDto, HttpServletRequest request) {
+    public void addBoardLike(Long boardId, HttpServletRequest request) {
+
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
+        Member findMember = memberRepository.findByMemberId(loginMember).orElseThrow(() -> new IllegalStateException("존재하지 않는 회원"));
+        Long memberId = findMember.getId();
+
+        Optional<ContentLike> findLike = contentLikeRepository.findByMemberIdAndBoardId(memberId, boardId);
+
+        if (findLike.isPresent()) {
+            throw new IllegalStateException("좋아요는 한 번만 가능");
+        }
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 게시판"));
+
+        ContentLike contentLike = ContentLike.addBoardLike(findMember, board);
+        contentLikeRepository.save(contentLike);
+
+        board.setLikeCount(board.getLikeCount() + 1);
+        boardRepository.save(board);
+
+    }
+
+    public void addCommentLike(AddLikeDto addLikeDto, HttpServletRequest request) {
 
         String loginMember = (String) request.getSession().getAttribute("loginMember");
 
@@ -54,7 +83,7 @@ public class ContentLikeService {
         Comment comment = commentRepository.findById(addLikeDto.getCommentId())
                 .orElseThrow(() -> new IllegalStateException("존재하지 않는 댓글"));
 
-        ContentLike contentLike = ContentLike.addLike(findMember, board, comment);
+        ContentLike contentLike = ContentLike.addCommentLike(findMember, board, comment);
         contentLikeRepository.save(contentLike);
 
         comment.setLikeCount(comment.getLikeCount() + 1);
@@ -65,4 +94,7 @@ public class ContentLikeService {
         Comment comment = commentRepository.findById(LikeDeleteDto.getCommentId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 댓글"));
         comment.setLikeCount(comment.getLikeCount() - 1);
     }
+
+
+
 }

@@ -2,7 +2,6 @@ package study.counsel.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import study.counsel.dto.board.*;
 import study.counsel.dto.comment.CommentDto;
 import study.counsel.entity.Board;
-import study.counsel.entity.Comment;
 import study.counsel.entity.Member;
 import study.counsel.repository.BoardRepository;
 import study.counsel.repository.MemberRepository;
@@ -52,10 +50,12 @@ public class BoardService {
         String title = board.getTitle();
         String text = board.getText();
         String nickname = board.getMember().getNickname();
+        String memberId = board.getMember().getMemberId();
         Date date = board.getDate();
         List<CommentDto> comments = commentService.getComment(id);
+        Long likeCount = board.getLikeCount();
 
-        return new BoardDetailDto(id, title, text, nickname, date, comments);
+        return new BoardDetailDto(id, title, text, nickname, memberId, date, comments, likeCount);
     }
 
     public void addBoard(AddBoardDto addBoardDto, HttpServletRequest request) {

@@ -33,11 +33,14 @@ public class Board extends BaseEntity {
     @JoinColumn(name = "memberId")
     private Member member;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "board")
     private List<ContentLike> contentLikes;
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "board")
     private List<Comment> comments;
+
+    @Setter
+    private Long likeCount = 0L;
 
     @Setter
     private boolean isDeleted;

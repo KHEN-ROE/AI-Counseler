@@ -29,13 +29,22 @@ public class ContentLike extends BaseEntity {
     @JoinColumn(name = "commentId")
     private Comment comment;
 
+    public ContentLike(Member member, Board board) {
+        this.member = member;
+        this.board = board;
+    }
+
     public ContentLike(Member member, Board board, Comment comment) {
         this.member = member;
         this.board = board;
         this.comment = comment;
     }
 
-    public static ContentLike addLike(Member member, Board board, Comment comment) {
+    public static ContentLike addBoardLike(Member member, Board board) {
+        return new ContentLike(member, board);
+    }
+
+    public static ContentLike addCommentLike(Member member, Board board, Comment comment) {
         return new ContentLike(member, board, comment);
     }
 }

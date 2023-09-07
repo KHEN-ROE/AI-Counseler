@@ -38,7 +38,7 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "boardId")
     private Board board;
 
-    @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "comment")
     private List<ContentLike> contentLikes;
 
     public Comment(String text, Date date, Member member, Board board) {

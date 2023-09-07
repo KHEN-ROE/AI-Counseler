@@ -25,10 +25,16 @@ public class BoardDetailDto {
     private String nickname;
 
     @NotNull
+    private String memberId;
+
+    @NotNull
     private Date date;
 
     @NotNull
     private List<CommentDto> comments;
+
+    @NotNull
+    private Long likeCount = 0L;
 
 
 }

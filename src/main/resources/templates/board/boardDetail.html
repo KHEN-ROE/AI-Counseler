@@ -28,11 +28,14 @@
   </div>
 
 
-  <a th:href="@{'/board/update/' + ${board.id}}"><button>수정</button></a>
+  <a th:href="@{'/board/update/' + ${board.id}}"><button th:if="${board.memberId.equals(loginMember)}">수정</button></a>
 
-  <form th:action="@{'/board/delete/' + ${board.id}}" method="post">
+  <form th:action="@{'/board/delete/' + ${board.id}}" method="post" th:if="${board.memberId.equals(loginMember)}">
     <button type="submit" class="delete_Btn">삭제</button>
   </form>
+
+  <span class="like-icon" th:data-board-id="${board.id}" onclick="addBoardLike(this)">👍</span>
+  <span class="like-count" th:text="${board.likeCount}">0</span>
 
 
   <div class="comments-section">
@@ -42,25 +45,22 @@
 
         <div class="comment-content-wrapper">
           <p th:text="${comment.text}" style="flex-grow: 1;">댓글 내용</p>
-          <div>
 
-            <!-- 좋아요 아이콘 및 숫자 -->
-
-              <span class="like-icon" th:data-id="${comment.id}" th:data-board-id="${board.id}" onclick="addLike(this)">👍</span>
+            <div>
+              <!-- 좋아요 아이콘 및 숫자 -->
+              <span class="like-icon" th:data-id="${comment.id}" th:data-board-id="${board.id}" onclick="addCommentLike(this)">👍</span>
               <span class="like-count" th:text="${comment.likeCount}">0</span>
 
+              <button class="editComment" th:data-id="${comment.id}" style="display: inline-block;" th:if="${comment.memberId.equals(loginMember)}">수정</button>
 
-            <div th:if="${comment.memberId.equals(loginMember)}">
-              <button class="editComment" th:data-id="${comment.id}" style="display: inline-block;">수정</button>
-
-              <form th:action="@{'/comment/delete'}" method="post" class="comment-button-form" style="display: inline-block;">
+              <form th:action="@{'/comment/delete'}" method="post" class="comment-button-form" style="display: inline-block;" th:if="${comment.memberId.equals(loginMember)}">
                 <input type="hidden" name="commentId" th:value="${comment.id}">
                 <input type="hidden" name="boardId" th:value="${board.id}">
                 <button class="deleteComment" type="submit">삭제</button>
               </form>
             </div>
           </div>
-        </div>
+
 
         <!-- 댓글 수정 폼 -->
         <div class="edit-comment-form" th:id="'editForm-' + ${comment.id}" style="display:none;">
@@ -113,7 +113,35 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-  function addLike(element) {
+  function addBoardLike(element) {
+    // comment id 가져오기
+    const boardId = $(element).data('board-id');
+
+    // Ajax 요청
+    $.post("/like/addBoardLike/" + boardId, function (response) {
+      if (response.error) {
+        // 에러 처리
+        alert(response.errorMessage);
+      } else {
+        // 좋아요 카운트 업데이트
+        updateBoardLikeCount(boardId);
+      }
+    }).fail(function () {
+      alert("좋아요는 한 번만 가능해요.");
+    });
+  }
+
+  function updateBoardLikeCount(boardId) {
+    $.get(`/like/getBoardLike/${boardId}`, function (data) {
+      $(`[data-board-id=${boardId}]`).next(".like-count").text(data);
+    }).fail(function () {
+      alert("좋아요 개수 가져오기에 실패했습니다.");
+    });
+  }
+</script>
+
+<script>
+  function addCommentLike(element) {
     // comment id 가져오기
     const commentId = $(element).data('id');
     const boardId = $(element).data('board-id');
@@ -125,21 +153,21 @@
     };
 
     // Ajax 요청
-    $.post("/like/add", data, function (response) {
+    $.post("/like/addCommentLike", data, function (response) {
       if (response.error) {
         // 에러 처리
         alert(response.errorMessage);
       } else {
         // 좋아요 카운트 업데이트
-        updateLikeCount(commentId);
+        updateCommentLikeCount(commentId);
       }
     }).fail(function () {
       alert("좋아요는 한 번만 가능해요.");
     });
   }
 
-  function updateLikeCount(commentId) {
-    $.get(`/like/get/${commentId}`, function (data) {
+  function updateCommentLikeCount(commentId) {
+    $.get(`/like/getCommentLike/${commentId}`, function (data) {
       $(`[data-id=${commentId}]`).next(".like-count").text(data);
     }).fail(function () {
       alert("좋아요 개수 가져오기에 실패했습니다.");
@@ -147,5 +175,6 @@
   }
 
 </script>
+
 </body>
 </html>

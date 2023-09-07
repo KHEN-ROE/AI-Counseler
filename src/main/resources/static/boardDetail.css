@@ -120,6 +120,10 @@ a .delete_Btn:hover {
     background-color: #0056b3;
 }
 
+.like-icon {
+    cursor: pointer !important;
+}
+
 /* 전체 폼 스타일 */
 .replyArea {
     width: 100%;
