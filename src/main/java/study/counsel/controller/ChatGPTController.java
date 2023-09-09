@@ -109,8 +109,10 @@ public class ChatGPTController {
 
     }
 
-    @PostMapping("/updateTile/{chatSequenceNumberId}")
+    @PostMapping("/updateTitle/{chatSequenceNumberId}")
     public String updateCounselTitle(@PathVariable Long chatSequenceNumberId, @RequestParam String newTitle , Model model) {
+
+        log.info("번호={}", chatSequenceNumberId, "새제목={}", newTitle);
 
         try {
             chatGPTService.updateCounselTitle(chatSequenceNumberId, newTitle);

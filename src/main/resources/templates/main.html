@@ -6,6 +6,8 @@
     <link rel="stylesheet" th:href="@{/main.css}"/>
 </head>
 <body>
+
+
 <!-- Navbar -->
 <div class="navbar">
     <div class="navbar-brand"><a href="/main" class="title">감정 쓰레기통</a></div>
@@ -34,26 +36,16 @@
         <ul>
             <li th:each="counselList : ${counselList}" th:if="${!counselList.isDeleted()}" style="margin-bottom: 10px;">
                 <a th:href="@{/chatGPT/completion/chat/{chatSequenceNumberId}(chatSequenceNumberId=${counselList.chatSequenceNumber.id})}">
-                    <span class="counselList">
-                        <span th:text="${counselList.title}"></span>
-                    </span>
+                <span class="counselList">
+                    <span class="displayTitle" th:text="${counselList.title}"></span>
+                </span>
                 </a>
+                <span class="editButton" th:onclick="'updateTitle(' + ${counselList.chatSequenceNumber.id} + ');'" style="cursor: pointer">🖉</span>
                 <i class="fas fa-trash-alt" th:attr="data-id=${counselList.chatSequenceNumber.id}" onclick="deleteCounsel(this)" style="cursor: pointer; margin-left: 2px"></i>
             </li>
         </ul>
     </aside>
 
-    <!-- 제목 변경 모달 -->
-    <div id="editModal" style="display:none;">
-        <h4>제목 변경</h4>
-        <form th:action="@{/updateTile/{chatSequenceNumberId}}" th:object="${chatSequenceNumberId}" method="post">
-            <input type="hidden" name="chatSequenceNumberId" id="chatSequenceNumberId">
-            <label>
-                <input type="text" name="newTitle" placeholder="새로운 제목을 입력하세요">
-            </label>
-            <button type="submit">변경</button>
-        </form>
-    </div>
 
     <!-- Main Content -->
     <main class="content">
@@ -152,6 +144,32 @@
                     alert('상담 내역 삭제에 실패하였습니다.');
                 }
             });
+        }
+    }
+</script>
+
+<script>
+    function updateTitle(chatSequenceNumberId) {
+        const newTitle = prompt("새로운 제목을 입력하세요.");
+
+        if (newTitle) {
+            fetch(`chatGPT/updateTitle/${chatSequenceNumberId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'newTitle=' + encodeURIComponent(newTitle)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        throw new Error('네트워크 응답이 올바르지 않습니다.');
+                    }
+                })
+                .catch(error => {
+                    alert('제목 변경 중 에러가 발생했습니다.');
+                });
         }
     }
 </script>

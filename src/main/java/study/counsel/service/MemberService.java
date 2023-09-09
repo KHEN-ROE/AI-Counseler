@@ -10,6 +10,7 @@ import study.counsel.entity.Member;
 import study.counsel.exception.EmailDuplicateException;
 import study.counsel.exception.NicknameDuplicateException;
 import study.counsel.exception.UserDuplicateException;
+import study.counsel.exception.UserNotFoundException;
 import study.counsel.repository.MemberRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -116,7 +117,7 @@ public class MemberService {
 
     public void login(LoginDto loginDto, HttpServletRequest request) {
 
-        Member findMember = memberRepository.findByMemberId(loginDto.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
+        Member findMember = memberRepository.findByMemberId(loginDto.getMemberId()).orElseThrow(() -> new UserNotFoundException("존재하지 않는 계정입니다."));
         String encryptedPwd = passwordEncrypter.encrypt(loginDto.getPassword());
 
         if (findMember.getPassword().equals(encryptedPwd)) {
@@ -125,7 +126,7 @@ public class MemberService {
             // 세션에 사용자 id 저장
             session.setAttribute("loginMember", loginDto.getMemberId());
         } else {
-            throw new IllegalStateException("비밀번호 불일치"); // 나중에 예외처리
+            throw new IllegalStateException("비밀번호가 일치하지 않습니다.");
         }
 
     }

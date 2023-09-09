@@ -67,15 +67,23 @@
 
     <!-- Sidebar -->
     <aside class="sidebar">
+
+        <!-- Font Awesome 라이브러리 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
         <h3>상담 내역</h3>
         <!-- 상담 내역을 나열할 부분 -->
         <ul>
-            <li th:each="counselList : ${counselList}" style="margin-bottom: 10px;">
+            <li th:each="counselList : ${counselList}" th:if="${!counselList.isDeleted()}" style="margin-bottom: 10px;">
                 <a th:href="@{/chatGPT/completion/chat/{chatSequenceNumberId}(chatSequenceNumberId=${counselList.chatSequenceNumber.id})}">
-                    <span class="counselList">
-                        <span th:text="${counselList.title}"></span>
-                    </span>
+                <span class="counselList">
+                    <span class="displayTitle" th:text="${counselList.title}"></span>
+                </span>
                 </a>
+                <span class="editButton" th:onclick="'updateTitle(' + ${counselList.chatSequenceNumber.id} + ');'"
+                      style="cursor: pointer">🖉</span>
+                <i class="fas fa-trash-alt" th:attr="data-id=${counselList.chatSequenceNumber.id}"
+                   onclick="deleteCounsel(this)" style="cursor: pointer; margin-left: 2px"></i>
             </li>
         </ul>
     </aside>
@@ -106,13 +114,14 @@
 
         <!-- 새로운 메시지 입력 폼 -->
         <form th:action="@{/chatGPT/completion/chat/{chatSequenceNumberId}(chatSequenceNumberId=${chatSequenceNumberId})}" method="post">
-        <div class="input-area">
+            <div class="input-area">
                 <h3>상담 하기</h3>
                 <input type="hidden" name="counselMode" id="counselMode" value="">
                 <label>
                     <textarea name="message" rows="4" placeholder="어떤 고민이 있나요?"></textarea>
                 </label>
-                <button type="submit">상담 요청</button> <button type="button">새 채팅</button>
+                <button type="submit">상담 요청</button>
+                <button type="button">새 채팅</button>
             </div>
             <!-- 로딩 애니메이션 -->
             <div id="loading" class="loading">
@@ -122,6 +131,51 @@
         </form>
     </main>
 </div>
+
+<script>
+    function deleteCounsel(element) {
+        const chatId = element.getAttribute('data-id');
+        if (confirm('상담 내역을 삭제하시겠습니까?')) {
+            // Ajax를 이용하여 서버에 삭제 요청
+            fetch(`/chatGPT/delete/${chatId}`, {
+                method: 'POST'
+            }).then(response => {
+                if (response.ok) {
+                    // 성공 시 해당 상담 항목을 DOM에서 삭제
+                    element.closest('li').remove();
+                } else {
+                    alert('상담 내역 삭제에 실패하였습니다.');
+                }
+            });
+        }
+    }
+</script>
+
+<script>
+    function updateTitle(chatSequenceNumberId) {
+        const newTitle = prompt("새로운 제목을 입력하세요.");
+
+        if (newTitle) {
+            fetch(`/chatGPT/updateTitle/${chatSequenceNumberId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'newTitle=' + encodeURIComponent(newTitle)
+            })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        throw new Error('네트워크 응답이 올바르지 않습니다.');
+                    }
+                })
+                .catch(error => {
+                    alert('제목 변경 중 에러가 발생했습니다.');
+                });
+        }
+    }
+</script>
 
 </body>
 </html>

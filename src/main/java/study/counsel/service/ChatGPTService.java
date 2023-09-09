@@ -143,6 +143,16 @@ public class ChatGPTService {
         return title;
     }
 
+    private static String getTitle(String newTitle) {
+        String title;
+        if (newTitle.length() >= 8) {
+            title = newTitle.substring(0, 8) + "...";
+        } else {
+            title = newTitle;
+        }
+        return title;
+    }
+
     @NotNull
     private static String getAnswerToString(List<String> messages) {
         return messages.stream()
@@ -321,7 +331,7 @@ public class ChatGPTService {
         List<CounselHistory> counselHistories = counselHistoryRepository.findByChatSequenceNumber(chatSequenceNumber);
 
         CounselHistory counselHistory = counselHistories.get(0);
-        counselHistory.setTitle(newTitle);
+        counselHistory.setTitle(getTitle(newTitle));
 
     }
 }

@@ -7,6 +7,147 @@
 </head>
 <body>
 
+
+
+<!-- Navbar -->
+<div class="navbar">
+  <div class="navbar-brand"><a href="/main" class="title">감정 쓰레기통</a></div>
+  <div class="navbar-menu">
+    <a href="/board/view">커뮤니티</a>
+    <div class="dropdown">
+      <a href="#" class="dropbtn">마이페이지</a>
+      <div class="dropdown-content">
+        <a href="/members/confirm">회원정보 수정</a>
+        <a href="/members/delete">회원 탈퇴</a>
+      </div>
+    </div>
+    <a href="/members/logout">로그아웃</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+
+    <!-- Font Awesome 라이브러리 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <h3>상담 내역</h3>
+    <!-- 상담 내역을 나열할 부분 -->
+    <ul>
+      <li th:each="counselList : ${counselList}" th:if="${!counselList.isDeleted()}" style="margin-bottom: 10px;">
+        <a th:href="@{/chatGPT/completion/chat/{chatSequenceNumberId}(chatSequenceNumberId=${counselList.chatSequenceNumber.id})}">
+                <span class="counselList">
+                    <span class="displayTitle" th:text="${counselList.title}"></span>
+                </span>
+        </a>
+        <span class="editButton" th:onclick="'updateTitle(event, ' + ${counselList.chatSequenceNumber.id} + ');'" style="cursor: pointer">🖉</span>
+        <i class="fas fa-trash-alt" th:attr="data-id=${counselList.chatSequenceNumber.id}" onclick="deleteCounsel(this)"
+           style="cursor: pointer; margin-left: 2px"></i>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <h2>상담 채팅</h2>
+
+    <!-- 채팅 내역 표시 -->
+    <div class="chat-area">
+      <ul>
+        <!-- 채팅 내역을 순회하며 출력 -->
+        <li th:each="chat : ${conversationList}">
+
+                    <span class="user-message">
+                        <strong>나:</strong> <span th:text="${chat.question}"></span>
+                    </span>
+
+          <br/>
+
+          <span class="ai-message">
+                        <strong>AI:</strong> <span th:text="${chat.answer}"></span>
+                    </span>
+        </li>
+
+      </ul>
+    </div>
+
+    <!-- 새로운 메시지 입력 폼 -->
+    <form action="/chatGPT/completion/chat" method="post">
+      <div class="input-area">
+        <h3>상담 하기</h3>
+        <input type="hidden" name="counselMode" id="counselMode" value="">
+        <label>
+          <textarea name="message" rows="4" placeholder="어떤 고민이 있나요?"></textarea>
+        </label>
+        <button type="submit">상담 요청</button>
+        <button type="button">새 채팅</button>
+      </div>
+      <!-- 로딩 애니메이션 -->
+      <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>15~20초 정도 소요됩니다...</p>
+      </div>
+    </form>
+  </main>
+</div>
+
+<script>
+  function deleteCounsel(element) {
+    const chatId = element.getAttribute('data-id');
+    if (confirm('상담 내역을 삭제하시겠습니까?')) {
+      // Ajax를 이용하여 서버에 삭제 요청
+      fetch(`/chatGPT/delete/${chatId}`, {
+        method: 'POST'
+      }).then(response => {
+        if (response.ok) {
+          // 성공 시 해당 상담 항목을 DOM에서 삭제
+          element.closest('li').remove();
+        } else {
+          alert('상담 내역 삭제에 실패하였습니다.');
+        }
+      });
+    }
+  }
+</script>
+
+<script>
+  function updateTitle(event, chatSequenceNumberId) {
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const newTitle = prompt("새로운 제목을 입력하세요.");
+    const submitButton = document.querySelector('button[type="submit"]');
+
+    if (newTitle) {
+      submitButton.disabled = true;
+
+      fetch(`/chatGPT/updateTitle/${chatSequenceNumberId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'newTitle=' + encodeURIComponent(newTitle)
+      })
+              .then(response => {
+                if (response.ok) {
+                  location.reload();
+                } else {
+                  throw new Error('네트워크 응답이 올바르지 않습니다.');
+                }
+              })
+              .catch(error => {
+                alert('제목 변경 중 에러가 발생했습니다.');
+              })
+              .finally(() => {
+                submitButton.disabled = false;
+              });
+    }
+  }
+</script>
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     const loadingElement = document.getElementById('loading');
@@ -46,82 +187,6 @@
   });
 
 </script>
-
-<!-- Navbar -->
-<div class="navbar">
-  <div class="navbar-brand"><a href="/main" class="title">감정 쓰레기통</a></div>
-  <div class="navbar-menu">
-    <a href="/board/view">커뮤니티</a>
-    <div class="dropdown">
-      <a href="#" class="dropbtn">마이페이지</a>
-      <div class="dropdown-content">
-        <a href="/members/confirm">회원정보 수정</a>
-        <a href="/members/delete">회원 탈퇴</a>
-      </div>
-    </div>
-    <a href="/members/logout">로그아웃</a>
-  </div>
-</div>
-
-<div class="container">
-
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <h3>상담 내역</h3>
-    <!-- 상담 내역을 나열할 부분 -->
-    <ul>
-      <li th:each="counselList : ${counselList}" style="margin-bottom: 10px;">
-        <a th:href="@{/chatGPT/completion/chat/{chatSequenceNumberId}(chatSequenceNumberId=${counselList.chatSequenceNumber.id})}">
-                    <span class="counselList">
-                        <span th:text="${counselList.title}"></span>
-                    </span>
-        </a>
-      </li>
-    </ul>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="content">
-    <h2>상담 채팅</h2>
-
-    <!-- 채팅 내역 표시 -->
-    <div class="chat-area">
-      <ul>
-        <!-- 채팅 내역을 순회하며 출력 -->
-        <li th:each="chat : ${conversationList}">
-
-                    <span class="user-message">
-                        <strong>나:</strong> <span th:text="${chat.question}"></span>
-                    </span>
-
-          <br/>
-
-          <span class="ai-message">
-                        <strong>AI:</strong> <span th:text="${chat.answer}"></span>
-                    </span>
-        </li>
-
-      </ul>
-    </div>
-
-    <!-- 새로운 메시지 입력 폼 -->
-    <form action="/chatGPT/completion/chat" method="post">
-      <div class="input-area">
-        <h3>상담 하기</h3>
-        <input type="hidden" name="counselMode" id="counselMode" value="">
-        <label>
-          <textarea name="message" rows="4" placeholder="어떤 고민이 있나요?"></textarea>
-        </label>
-        <button type="submit">상담 요청</button> <button type="button">새 채팅</button>
-      </div>
-      <!-- 로딩 애니메이션 -->
-      <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>15~20초 정도 소요됩니다...</p>
-      </div>
-    </form>
-  </main>
-</div>
 
 </body>
 </html>

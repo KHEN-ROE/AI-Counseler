@@ -12,6 +12,7 @@ import study.counsel.dto.member.*;
 import study.counsel.exception.EmailDuplicateException;
 import study.counsel.exception.NicknameDuplicateException;
 import study.counsel.exception.UserDuplicateException;
+import study.counsel.exception.UserNotFoundException;
 import study.counsel.service.MemberService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -167,9 +168,13 @@ public class MemberController {
 
         try {
             memberservice.login(loginDto, request);
-        } catch (Exception e) {
+        } catch (UserNotFoundException e) {
             log.info("error={}", e.getMessage());
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("userNotFoundException", e.getMessage());
+            return "members/loginForm";
+        } catch (IllegalStateException e) {
+            log.info("error={}", e.getMessage());
+            model.addAttribute("illegalStateException", e.getMessage());
             return "members/loginForm";
         }
 
