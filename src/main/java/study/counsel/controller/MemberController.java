@@ -8,9 +8,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import retrofit2.http.HTTP;
 import study.counsel.dto.member.*;
-import study.counsel.exception.MemberAlreadyExistsException;
+import study.counsel.exception.EmailDuplicateException;
+import study.counsel.exception.NicknameDuplicateException;
+import study.counsel.exception.UserDuplicateException;
 import study.counsel.service.MemberService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -42,14 +43,21 @@ public class MemberController {
         // 중복회원 검증
         try {
             memberservice.createMember(memberFormDto);
-        } catch (MemberAlreadyExistsException e) {
+            // 회원가입 성공 메시지 추가
+            redirectAttributes.addFlashAttribute("registrationSuccess", true);
+        } catch (UserDuplicateException e) {
             log.info("error={}", e.getMessage());
-            redirectAttributes.addAttribute("errorMessage", e.getMessage());
-            return "redirect:/members/memberCreateForm"; // 이렇게 하면 409에러 못띄운다. MemberAlreadyExistsException가 사실상 무의미.
+            redirectAttributes.addFlashAttribute("memberIdError", e.getMessage());
+            return "redirect:/members/join";
+        } catch (NicknameDuplicateException e) {
+            log.info("error={}", e.getMessage());
+            redirectAttributes.addFlashAttribute("nicknameError", e.getMessage());
+            return "redirect:/members/join";
+        } catch (EmailDuplicateException e) {
+            log.info("error={}", e.getMessage());
+            redirectAttributes.addFlashAttribute("emailError", e.getMessage());
+            return "redirect:/members/join";
         }
-
-        // 회원가입 성공 메시지 추가
-        redirectAttributes.addFlashAttribute("registrationSuccess", true);
         // 다시 회원가입 폼으로
         return "redirect:/members/join"; // redirect는 url로 이동시킴. return "템플릿명"은 뷰를 리턴
     }
@@ -62,27 +70,29 @@ public class MemberController {
     @PostMapping("/confirm")
     public String confirmPassword(@Validated ConfirmPasswordDto confirmPasswordDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
 
+        log.info("password={}", confirmPasswordDto);
+
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());
-            return "members/comfirmPwdForm";
+            return "members/confirmPasswordForm";
         }
 
         try {
             memberservice.confirmPassword(confirmPasswordDto, request);
+            return "redirect:/members/update";
 
         } catch (Exception e) {
             log.info("error={}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
             return "members/confirmPasswordForm";
         }
-
-        return "redirect:/members/update";
     }
 
     @GetMapping("/update")
     public String updateMemberForm(Model model, HttpServletRequest request) {
 
         String loginMember = (String) request.getSession().getAttribute("loginMember");
+        log.info("loginMember={}", loginMember);
         model.addAttribute("memberId", loginMember);
         model.addAttribute(new UpdateMemberFormDto());
         return "/members/memberUpdateForm";
@@ -93,6 +103,8 @@ public class MemberController {
     @PostMapping("/update")
     public String updateMember(@Validated UpdateMemberFormDto memberFormDto, BindingResult bindingResult, Model model, HttpServletRequest request) {
 
+        String loginMember = (String) request.getSession().getAttribute("loginMember");
+
         if (bindingResult.hasErrors()) {
             log.info("error={}", bindingResult.getFieldError());
             return "members/memberUpdateForm";
@@ -100,13 +112,17 @@ public class MemberController {
 
         try {
             memberservice.updateMember(memberFormDto, request);
-            model.addAttribute("memberId");
+            model.addAttribute("memberId", loginMember);
             return "redirect:/members/logout";
-        } catch (Exception e) {
+        } catch (NicknameDuplicateException e) {
             log.info("error={}", e.getMessage());
-            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("nicknameError", e.getMessage());
+            return "/members/memberUpdateForm";
+        } catch (EmailDuplicateException e) {
+            log.info("error={}", e.getMessage());
+            model.addAttribute("emailError", e.getMessage());
+            return "/members/memberUpdateForm";
         }
-        return "redirect:/";
     }
 
     @GetMapping("/delete")
@@ -127,6 +143,7 @@ public class MemberController {
         } catch (Exception e) {
             log.info("error={}", e.getMessage());
             model.addAttribute("errorMessage", e.getMessage());
+            return "members/deleteMemberForm";
         }
 
         return "redirect:/";

@@ -108,5 +108,26 @@ public class ChatGPTController {
         return "/chat/chatViewHistory";
 
     }
-    
+
+    @PostMapping("/updateTile/{chatSequenceNumberId}")
+    public String updateCounselTitle(@PathVariable Long chatSequenceNumberId, @RequestParam String newTitle , Model model) {
+
+        try {
+            chatGPTService.updateCounselTitle(chatSequenceNumberId, newTitle);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage={}", e.getMessage());
+        }
+        return "chat/chatView";
+    }
+
+    @PostMapping("/delete/{chatSequenceNumberId}")
+    public String deleteCounsel(@PathVariable Long chatSequenceNumberId, Model model) {
+
+        try {
+            chatGPTService.deleteCounsel(chatSequenceNumberId);
+        } catch (Exception e) {
+            model.addAttribute("errorMessage={}", e.getMessage());
+        }
+        return "chat/chatView";
+    }
 }

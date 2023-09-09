@@ -26,7 +26,7 @@
     <div>
         <label for="nickname">닉네임</label>
         <input type="text" id="nickname" th:field="*{nickname}">
-        <span th:if="${#fields.hasErrors('nickname')}" th:errors="*{nickname}">닉네임 오류</span>
+        <span th:if="${nicknameError}" th:text="${nicknameError}">닉네임 오류</span>
     </div>
 
     <div>
@@ -38,7 +38,7 @@
     <div>
         <label for="email">이메일</label>
         <input type="email" id="email" th:field="*{email}">
-        <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}">이메일 오류</span>
+        <span th:if="${emailError}" th:text="${emailError}">이메일 오류</span>
     </div>
 
     <div>

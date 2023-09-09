@@ -3,13 +3,12 @@ package study.counsel.controller;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Commit;
 import org.springframework.transaction.annotation.Transactional;
 import study.counsel.config.PasswordEncrypter;
 import study.counsel.dto.member.DeleteMemberDto;
 import study.counsel.dto.member.MemberFormDto;
 import study.counsel.entity.Member;
-import study.counsel.exception.MemberAlreadyExistsException;
+import study.counsel.exception.UserDuplicateException;
 import study.counsel.repository.MemberRepository;
 import study.counsel.service.MemberService;
 
@@ -54,7 +53,7 @@ class MemberControllerTest {
 
         //when
         memberService.createMember(memberFormDto);
-        Throwable e = assertThrows(MemberAlreadyExistsException.class, () -> memberService.createMember(memberFormDto2));
+        Throwable e = assertThrows(UserDuplicateException.class, () -> memberService.createMember(memberFormDto2));
 
         //then
         assertEquals("이미 존재하는 아이디", e.getMessage());

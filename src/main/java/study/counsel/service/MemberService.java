@@ -7,7 +7,9 @@ import org.springframework.transaction.annotation.Transactional;
 import study.counsel.config.PasswordEncrypter;
 import study.counsel.dto.member.*;
 import study.counsel.entity.Member;
-import study.counsel.exception.MemberAlreadyExistsException;
+import study.counsel.exception.EmailDuplicateException;
+import study.counsel.exception.NicknameDuplicateException;
+import study.counsel.exception.UserDuplicateException;
 import study.counsel.repository.MemberRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,21 +31,21 @@ public class MemberService {
         memberRepository.findByMemberId(memberFormDto.getMemberId())
                 .ifPresent(member ->
                         {
-                            throw new MemberAlreadyExistsException("이미 존재하는 아이디");
+                            throw new UserDuplicateException("이미 존재하는 아이디");
                         }
                 );
 
         memberRepository.findByEmail(memberFormDto.getEmail())
                 .ifPresent(member ->
                         {
-                            throw new MemberAlreadyExistsException("이미 존재하는 이메일");
+                            throw new EmailDuplicateException("이미 존재하는 이메일");
                         }
                 );
 
         memberRepository.findByNickname(memberFormDto.getNickname())
                 .ifPresent(member ->
                         {
-                            throw new MemberAlreadyExistsException("이미 존재하는 별명");
+                            throw new NicknameDuplicateException("이미 존재하는 별명");
                         }
                 );
 
@@ -64,13 +66,13 @@ public class MemberService {
 
         memberRepository.findByNickname(memberFormDto.getNickname()).ifPresent(m -> {
             if (!m.getMemberId().equals(member.getMemberId())) { // db에 있는 id와, 현재 로그인한 회원의 id가 같은지 체크
-                throw new IllegalStateException("이미 존재하는 닉네임");
+                throw new NicknameDuplicateException("이미 존재하는 닉네임");
             }
         });
 
         memberRepository.findByEmail(memberFormDto.getEmail()).ifPresent(m -> {
             if (!m.getMemberId().equals(member.getMemberId())) {
-                throw new IllegalStateException("이미 존재하는 이메일");
+                throw new EmailDuplicateException("이미 존재하는 이메일");
             }
         });
 
@@ -92,11 +94,7 @@ public class MemberService {
 
         String encryptedPassword = passwordEncrypter.encrypt(confirmPasswordDto.getPassword());
 
-        try {
-            if (findMember.getPassword().equals(encryptedPassword)) {
-                log.info("패스워드 일치");
-            }
-        } catch (Exception e) {
+        if (!findMember.getPassword().equals(encryptedPassword)) {
             throw new IllegalStateException("비밀번호 불일치");
         }
     }
@@ -111,6 +109,8 @@ public class MemberService {
         String encryptedPwd = passwordEncrypter.encrypt(deleteMemberDto.getPassword());
         if (findMember.getPassword().equals(encryptedPwd)) {
             findMember.setDeleted(true); // 논리적 삭제
+        } else {
+            throw new IllegalStateException("비밀번호 불일치");
         }
     }
 

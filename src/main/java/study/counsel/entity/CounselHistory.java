@@ -3,6 +3,7 @@ package study.counsel.entity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import study.counsel.common.BaseEntity;
 
 import javax.persistence.*;
@@ -17,6 +18,7 @@ public class CounselHistory extends BaseEntity {
     @Column(name = "counselHistory_id")
     private Long id;
 
+    @Setter
     private String title;
 
     @Column(name = "gpt_question", length = 1500, nullable = false)
@@ -34,6 +36,9 @@ public class CounselHistory extends BaseEntity {
     private ChatSequenceNumber chatSequenceNumber;
 
     private String counselMode;
+
+    @Setter
+    private boolean isDeleted = false;
 
     public CounselHistory(String title, String question, String answer, Member member, ChatSequenceNumber chatSequenceNumber, String counselMode) {
         this.title = title;

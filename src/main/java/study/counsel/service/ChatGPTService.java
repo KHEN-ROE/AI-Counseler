@@ -300,4 +300,28 @@ public class ChatGPTService {
     private Member getMemberByRequestId(GPTCompletionChatRequest request) {
         return memberRepository.findByMemberId(request.getMemberId()).orElseThrow(() -> new IllegalStateException("존재하지 않는 유저"));
     }
+
+    public void deleteCounsel(Long chatSequenceNumberId) {
+
+        ChatSequenceNumber chatSequenceNumber = chatSequenceNumberRepository.findById(chatSequenceNumberId)
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 시퀀스"));
+
+        List<CounselHistory> counselHistories = counselHistoryRepository.findByChatSequenceNumber(chatSequenceNumber);
+
+        for (CounselHistory counselHistory : counselHistories) {
+            counselHistory.setDeleted(true);
+        }
+    }
+
+    public void updateCounselTitle(Long chatSequenceNumberId, String newTitle) {
+
+        ChatSequenceNumber chatSequenceNumber = chatSequenceNumberRepository.findById(chatSequenceNumberId)
+                .orElseThrow(() -> new IllegalStateException("존재하지 않는 시퀀스"));
+
+        List<CounselHistory> counselHistories = counselHistoryRepository.findByChatSequenceNumber(chatSequenceNumber);
+
+        CounselHistory counselHistory = counselHistories.get(0);
+        counselHistory.setTitle(newTitle);
+
+    }
 }
