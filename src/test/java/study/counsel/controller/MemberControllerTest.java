@@ -13,6 +13,8 @@ import study.counsel.repository.MemberRepository;
 import study.counsel.service.MemberService;
 
 
+import javax.servlet.http.HttpServletRequest;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -99,7 +101,7 @@ class MemberControllerTest {
 
     // 회원삭제 테스트
     @Test
-    void deleteMember() {
+    void deleteMember(HttpServletRequest request) {
         MemberFormDto memberFormDto = createForm();
         memberService.createMember(memberFormDto);
 
@@ -113,7 +115,7 @@ class MemberControllerTest {
         deleteMemberDto.setMemberId(memberId);
         deleteMemberDto.setPassword(password);
 
-        memberService.deleteMember(deleteMemberDto);
+        memberService.deleteMember(deleteMemberDto, request);
 
         assertThat(findMember.isDeleted()).isTrue();
     }
