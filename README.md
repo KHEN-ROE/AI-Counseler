@@ -158,6 +158,7 @@ erDiagram
 > BE
 - Spring Boot, Gradle, IntelliJ
 - Interceptor 이용하여 사용자 인증
+- Spring Data JPA 활용하여 데이터베이스 연동
 - Validation
 - Docker, AWS EC2 활용하여 배포
 
